@@ -99,6 +99,30 @@
   line-height: 1.6;
 }
 
+.backButton {
+  width: fit-content;
+  padding: 0.85rem 1.1rem;
+  border: 1px solid rgba(177, 229, 255, 0.32);
+  border-radius: 999px;
+  background: rgba(8, 15, 26, 0.88);
+  color: var(--text);
+  font: inherit;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  pointer-events: auto;
+  cursor: pointer;
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    background 180ms ease;
+}
+
+.backButton:hover {
+  transform: translateY(-1px);
+  border-color: rgba(216, 247, 255, 0.65);
+  background: rgba(12, 22, 36, 0.94);
+}
+
 .progressBlock {
   display: flex;
   flex-direction: column;

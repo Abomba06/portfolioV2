@@ -19,12 +19,24 @@ export function ExperienceShell() {
   );
 
   useEffect(() => {
-    document.body.style.cursor = hoveredZoneId ? "pointer" : "default";
+    document.body.style.cursor = hoveredZoneId && !selectedZoneId ? "pointer" : "default";
 
     return () => {
       document.body.style.cursor = "default";
     };
-  }, [hoveredZoneId]);
+  }, [hoveredZoneId, selectedZoneId]);
+
+  useEffect(() => {
+    if (!scrollContainer) {
+      return;
+    }
+
+    scrollContainer.style.overflowY = selectedZoneId ? "hidden" : "auto";
+
+    return () => {
+      scrollContainer.style.overflowY = "auto";
+    };
+  }, [scrollContainer, selectedZoneId]);
 
   return (
     <main className={styles.shell}>
@@ -34,29 +46,47 @@ export function ExperienceShell() {
           <div className={styles.stickyScene}>
             <ExperienceCanvas
               progress={progress}
-              hoveredZoneId={hoveredZoneId}
+              hoveredZoneId={selectedZoneId ? null : hoveredZoneId}
               selectedZoneId={selectedZoneId}
-              onHoverZone={setHoveredZoneId}
+              onHoverZone={(zoneId) => {
+                if (!selectedZoneId) {
+                  setHoveredZoneId(zoneId);
+                }
+              }}
               onSelectZone={setSelectedZoneId}
             />
             <div className={styles.overlay}>
               <div className={styles.kicker}>IMMERSIVE ROCKET PORTFOLIO</div>
-              <h1 className={styles.title}>Travel the rocket instead of scrolling a page.</h1>
+              <h1 className={styles.title}>
+                {selectedZoneId ? `Entering the ${previewZone.label}.` : "Travel the rocket instead of scrolling a page."}
+              </h1>
               <p className={styles.copy}>{previewZone.description}</p>
               <div className={styles.status}>
-                <span>Stage 3</span>
+                <span>Stage 4</span>
                 <span>{previewZone.label}</span>
               </div>
               <div className={styles.interactionPanel}>
                 <span className={styles.interactionEyebrow}>Rocket interface</span>
                 <p className={styles.interactionCopy}>
-                  {hoveredZoneId
+                  {selectedZoneId
+                    ? `Camera locked into ${previewZone.shortLabel}. Use the return control to pull back out to the full vessel.`
+                    : hoveredZoneId
                     ? `Hovering ${previewZone.shortLabel}. Click to lock this subsystem.`
-                    : selectedZoneId
-                      ? `${previewZone.shortLabel} selected. Stage 4 will use this for zoom-in transitions.`
-                      : "Move across the rocket to reveal its interactive regions. Click any section to arm it for entry."}
+                    : "Move across the rocket to reveal its interactive regions. Click any section to arm it for entry."}
                 </p>
               </div>
+              {selectedZoneId ? (
+                <button
+                  type="button"
+                  className={styles.backButton}
+                  onClick={() => {
+                    setHoveredZoneId(null);
+                    setSelectedZoneId(null);
+                  }}
+                >
+                  Return To Rocket
+                </button>
+              ) : null}
               <div className={styles.progressBlock}>
                 <span className={styles.progressLabel}>Scroll trajectory</span>
                 <div className={styles.progressTrack}>

@@ -3,6 +3,7 @@
 import { Environment, Float, Sparkles, Stars } from "@react-three/drei";
 import { getZoneForProgress, RocketZoneId } from "@/lib/rocketZones";
 import { CameraRig } from "./camera/CameraRig";
+import { SubsystemFocus } from "./detail/SubsystemFocus";
 import { RocketModel } from "./rocket/RocketModel";
 import { RocketZones } from "./rocket/RocketZones";
 import { SceneLighting } from "./world/SceneLighting";
@@ -26,8 +27,8 @@ export function SceneRoot({
 
   return (
     <>
-      <CameraRig progress={progress} />
-      <SceneLighting progress={progress} activeZoneId={activeZone.id} />
+      <CameraRig progress={progress} selectedZoneId={selectedZoneId} />
+      <SceneLighting progress={progress} activeZoneId={activeZone.id} selectedZoneId={selectedZoneId} />
       <Stars
         radius={120}
         depth={80}
@@ -64,6 +65,7 @@ export function SceneRoot({
             onHoverZone={onHoverZone}
             onSelectZone={onSelectZone}
           />
+          <SubsystemFocus selectedZoneId={selectedZoneId} />
         </group>
       </Float>
       <Environment preset="night" />

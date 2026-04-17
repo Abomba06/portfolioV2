@@ -6,6 +6,7 @@ import { ROCKET_ZONES, RocketZoneId } from "@/lib/rocketZones";
 type SceneLightingProps = {
   progress: number;
   activeZoneId: RocketZoneId;
+  selectedZoneId: RocketZoneId | null;
 };
 
 const zoneLightPositions: Record<RocketZoneId, [number, number, number]> = {
@@ -16,9 +17,11 @@ const zoneLightPositions: Record<RocketZoneId, [number, number, number]> = {
   thrustersDrive: [1.2, -4.1, 0.8],
 };
 
-export function SceneLighting({ progress, activeZoneId }: SceneLightingProps) {
+export function SceneLighting({ progress, activeZoneId, selectedZoneId }: SceneLightingProps) {
   const accentIntensity = MathUtils.lerp(9, 17, progress);
-  const activeZone = ROCKET_ZONES.find((zone) => zone.id === activeZoneId) ?? ROCKET_ZONES[0];
+  const focusZoneId = selectedZoneId ?? activeZoneId;
+  const activeZone = ROCKET_ZONES.find((zone) => zone.id === focusZoneId) ?? ROCKET_ZONES[0];
+  const detailBoost = selectedZoneId ? 1.4 : 1;
 
   return (
     <>
@@ -36,8 +39,8 @@ export function SceneLighting({ progress, activeZoneId }: SceneLightingProps) {
       <pointLight position={[0, -3.6, 1.2]} intensity={18} distance={10} color="#4fd4ff" />
       <pointLight
         position={zoneLightPositions[activeZone.id]}
-        intensity={accentIntensity}
-        distance={8}
+        intensity={accentIntensity * detailBoost}
+        distance={selectedZoneId ? 10 : 8}
         color={activeZone.lightColor}
       />
     </>
