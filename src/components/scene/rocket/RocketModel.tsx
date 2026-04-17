@@ -3,7 +3,7 @@
 import { Html, useGLTF } from "@react-three/drei";
 import { ThreeElements } from "@react-three/fiber";
 import { useLayoutEffect, useMemo } from "react";
-import { Mesh, MeshStandardMaterial, Object3D } from "three";
+import { Box3, Mesh, MeshStandardMaterial, Object3D, Vector3 } from "three";
 import { ROCKET_ZONES, RocketZoneId } from "@/lib/rocketZones";
 
 type RocketModelProps = ThreeElements["group"] & {
@@ -13,7 +13,28 @@ type RocketModelProps = ThreeElements["group"] & {
   selectedZoneId: RocketZoneId | null;
 };
 
-const MODEL_PATH = "/models/rocket.glb";
+const MODEL_PATH = "/models/atlas-v-551.glb";
+const TARGET_HEIGHT = 10;
+
+function inferZoneIdFromNormalizedHeight(normalizedHeight: number): RocketZoneId {
+  if (normalizedHeight >= 0.82) {
+    return "noseVision";
+  }
+
+  if (normalizedHeight >= 0.62) {
+    return "upperBodyCoding";
+  }
+
+  if (normalizedHeight >= 0.42) {
+    return "coreAchievements";
+  }
+
+  if (normalizedHeight >= 0.18) {
+    return "lowerBodyEngineering";
+  }
+
+  return "thrustersDrive";
+}
 
 function getInteractionAccent(
   activeZoneId: RocketZoneId,
@@ -59,6 +80,11 @@ export function RocketModel({
 
   const rocketScene = useMemo(() => {
     const clone = scene.clone(true);
+    const overallBox = new Box3();
+    const meshBox = new Box3();
+    const size = new Vector3();
+    const center = new Vector3();
+    const meshCenter = new Vector3();
 
     clone.traverse((child: Object3D) => {
       const mesh = child as Mesh;
@@ -76,6 +102,29 @@ export function RocketModel({
       }
     });
 
+    clone.updateMatrixWorld(true);
+    overallBox.setFromObject(clone);
+    overallBox.getSize(size);
+    overallBox.getCenter(center);
+
+    const scale = size.y > 0 ? TARGET_HEIGHT / size.y : 1;
+    clone.scale.setScalar(scale);
+    clone.position.set(-center.x * scale, -center.y * scale, -center.z * scale);
+    clone.updateMatrixWorld(true);
+
+    clone.traverse((child: Object3D) => {
+      const mesh = child as Mesh;
+      if (!mesh.isMesh) {
+        return;
+      }
+
+      meshBox.setFromObject(mesh);
+      meshBox.getCenter(meshCenter);
+
+      const normalizedHeight = size.y > 0 ? (meshCenter.y / scale + center.y - overallBox.min.y) / size.y : 0.5;
+      mesh.userData.zoneId = inferZoneIdFromNormalizedHeight(normalizedHeight);
+    });
+
     return clone;
   }, [scene]);
 
@@ -87,38 +136,18 @@ export function RocketModel({
       }
 
       const material = mesh.material as MeshStandardMaterial;
-      const isBand = mesh.name.startsWith("band_");
-      const isThrusterGlow = mesh.name.startsWith("thruster_glow_");
-      const isBody = mesh.name === "rocket_body";
-      const isNose = mesh.name === "rocket_nose";
+      const meshZoneId = mesh.userData.zoneId as RocketZoneId | undefined;
+      const isInteractive = meshZoneId === hoveredZoneId || meshZoneId === selectedZoneId;
+      const zoneRange = meshZoneId
+        ? (ROCKET_ZONES.find((zone) => zone.id === meshZoneId)?.progressRange ?? [0, 1])
+        : [0, 1];
+      const isFocused = progress >= zoneRange[0] && progress <= zoneRange[1];
 
-      if (isBody) {
-        material.emissive.set(accent);
-        material.emissiveIntensity = hoveredZoneId || selectedZoneId ? 0.35 : 0.2;
-      }
+      material.emissive.set(meshZoneId === "thrustersDrive" ? "#66d5ff" : accent);
+      material.emissiveIntensity = isInteractive ? 0.45 : isFocused ? 0.2 : 0.1;
 
-      if (isNose) {
-        material.emissiveIntensity = activeZoneId === "noseVision" || selectedZoneId === "noseVision" ? 0.35 : 0.25;
-      }
-
-      if (isBand) {
-        const bandZoneId =
-          mesh.name === "band_upper"
-            ? "upperBodyCoding"
-            : mesh.name === "band_core"
-              ? "coreAchievements"
-              : "lowerBodyEngineering";
-        const [start, end] =
-          ROCKET_ZONES.find((zone) => zone.id === bandZoneId)?.progressRange ?? [0, 1];
-        const isInteractive = hoveredZoneId === bandZoneId || selectedZoneId === bandZoneId;
-
-        material.color.set(isInteractive ? "#e6fbff" : progress >= start && progress <= end ? "#c3eeff" : "#7bd8ff");
-        material.emissive.set("#66d5ff");
-        material.emissiveIntensity = isInteractive ? 2.1 : progress >= start && progress <= end ? 1.4 : 0.65;
-      }
-
-      if (isThrusterGlow) {
-        material.opacity = activeZoneId === "thrustersDrive" || selectedZoneId === "thrustersDrive" ? 0.92 : 0.72;
+      if (meshZoneId === "thrustersDrive") {
+        material.emissiveIntensity = isInteractive ? 0.85 : isFocused ? 0.55 : 0.24;
       }
     });
   }, [accent, activeZoneId, hoveredZoneId, progress, rocketScene, selectedZoneId]);
