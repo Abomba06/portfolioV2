@@ -7,10 +7,23 @@ import { ROCKET_ZONES, RocketZoneId } from "@/lib/rocketZones";
 type RocketModelProps = ThreeElements["group"] & {
   progress: number;
   activeZoneId: RocketZoneId;
+  hoveredZoneId: RocketZoneId | null;
+  selectedZoneId: RocketZoneId | null;
 };
 
-function RocketBody({ activeZoneId }: { activeZoneId: RocketZoneId }) {
+function RocketBody({
+  activeZoneId,
+  hoveredZoneId,
+  selectedZoneId,
+}: {
+  activeZoneId: RocketZoneId;
+  hoveredZoneId: RocketZoneId | null;
+  selectedZoneId: RocketZoneId | null;
+}) {
   const accent = ROCKET_ZONES.find((zone) => zone.id === activeZoneId)?.lightColor ?? "#7cc7ff";
+  const interactionZoneId = hoveredZoneId ?? selectedZoneId ?? activeZoneId;
+  const interactionAccent =
+    ROCKET_ZONES.find((zone) => zone.id === interactionZoneId)?.lightColor ?? accent;
 
   return (
     <group>
@@ -20,8 +33,8 @@ function RocketBody({ activeZoneId }: { activeZoneId: RocketZoneId }) {
           color="#bcc7d9"
           metalness={0.85}
           roughness={0.23}
-          emissive={accent}
-          emissiveIntensity={0.2}
+          emissive={interactionAccent}
+          emissiveIntensity={hoveredZoneId || selectedZoneId ? 0.35 : 0.2}
         />
       </mesh>
 
@@ -44,25 +57,34 @@ function RocketBody({ activeZoneId }: { activeZoneId: RocketZoneId }) {
   );
 }
 
-function PanelBands({ progress }: { progress: number }) {
+function PanelBands({
+  progress,
+  hoveredZoneId,
+  selectedZoneId,
+}: {
+  progress: number;
+  hoveredZoneId: RocketZoneId | null;
+  selectedZoneId: RocketZoneId | null;
+}) {
   return (
     <group>
       {[
-        { y: -0.95, start: 0.62, end: 0.92 },
-        { y: 0.7, start: 0.32, end: 0.66 },
-        { y: 2.25, start: 0.08, end: 0.4 },
-      ].map(({ y, start, end }) => {
+        { y: -0.95, start: 0.62, end: 0.92, zoneId: "lowerBodyEngineering" as const },
+        { y: 0.7, start: 0.32, end: 0.66, zoneId: "coreAchievements" as const },
+        { y: 2.25, start: 0.08, end: 0.4, zoneId: "upperBodyCoding" as const },
+      ].map(({ y, start, end, zoneId }) => {
         const isFocused = progress >= start && progress <= end;
+        const isInteractive = hoveredZoneId === zoneId || selectedZoneId === zoneId;
 
         return (
-        <mesh key={y} position={[0, y, 0]} rotation={[Math.PI / 2, 0, 0]}>
-          <torusGeometry args={[0.84, 0.04, 20, 64]} />
-          <meshStandardMaterial
-            color={isFocused ? "#c3eeff" : "#7bd8ff"}
-            emissive="#66d5ff"
-            emissiveIntensity={isFocused ? 1.4 : 0.65}
-          />
-        </mesh>
+          <mesh key={y} position={[0, y, 0]} rotation={[Math.PI / 2, 0, 0]}>
+            <torusGeometry args={[0.84, 0.04, 20, 64]} />
+            <meshStandardMaterial
+              color={isInteractive ? "#e6fbff" : isFocused ? "#c3eeff" : "#7bd8ff"}
+              emissive="#66d5ff"
+              emissiveIntensity={isInteractive ? 2.1 : isFocused ? 1.4 : 0.65}
+            />
+          </mesh>
         );
       })}
     </group>
@@ -136,11 +158,21 @@ function Label() {
   );
 }
 
-export function RocketModel({ activeZoneId, progress, ...groupProps }: RocketModelProps) {
+export function RocketModel({
+  activeZoneId,
+  progress,
+  hoveredZoneId,
+  selectedZoneId,
+  ...groupProps
+}: RocketModelProps) {
   return (
     <group {...groupProps} rotation={[0.12, 0.3, -0.08]}>
-      <RocketBody activeZoneId={activeZoneId} />
-      <PanelBands progress={progress} />
+      <RocketBody
+        activeZoneId={activeZoneId}
+        hoveredZoneId={hoveredZoneId}
+        selectedZoneId={selectedZoneId}
+      />
+      <PanelBands progress={progress} hoveredZoneId={hoveredZoneId} selectedZoneId={selectedZoneId} />
       <Fins />
       <Thrusters />
       <Label />

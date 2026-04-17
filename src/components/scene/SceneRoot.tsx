@@ -1,16 +1,27 @@
 "use client";
 
 import { Environment, Float, Sparkles, Stars } from "@react-three/drei";
-import { getZoneForProgress } from "@/lib/rocketZones";
+import { getZoneForProgress, RocketZoneId } from "@/lib/rocketZones";
 import { CameraRig } from "./camera/CameraRig";
 import { RocketModel } from "./rocket/RocketModel";
+import { RocketZones } from "./rocket/RocketZones";
 import { SceneLighting } from "./world/SceneLighting";
 
 type SceneRootProps = {
   progress: number;
+  hoveredZoneId: RocketZoneId | null;
+  selectedZoneId: RocketZoneId | null;
+  onHoverZone: (zoneId: RocketZoneId | null) => void;
+  onSelectZone: (zoneId: RocketZoneId) => void;
 };
 
-export function SceneRoot({ progress }: SceneRootProps) {
+export function SceneRoot({
+  progress,
+  hoveredZoneId,
+  selectedZoneId,
+  onHoverZone,
+  onSelectZone,
+}: SceneRootProps) {
   const activeZone = getZoneForProgress(progress);
 
   return (
@@ -40,7 +51,20 @@ export function SceneRoot({ progress }: SceneRootProps) {
         floatIntensity={0.45}
         floatingRange={[-0.15, 0.2]}
       >
-        <RocketModel progress={progress} activeZoneId={activeZone.id} />
+        <group onPointerMissed={() => onHoverZone(null)}>
+          <RocketModel
+            progress={progress}
+            activeZoneId={activeZone.id}
+            hoveredZoneId={hoveredZoneId}
+            selectedZoneId={selectedZoneId}
+          />
+          <RocketZones
+            hoveredZoneId={hoveredZoneId}
+            selectedZoneId={selectedZoneId}
+            onHoverZone={onHoverZone}
+            onSelectZone={onSelectZone}
+          />
+        </group>
       </Float>
       <Environment preset="night" />
     </>

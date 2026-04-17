@@ -63,3 +63,11 @@ export function getZoneForProgress(progress: number): RocketZoneDefinition {
     ROCKET_ZONES[ROCKET_ZONES.length - 1]
   );
 }
+
+export function getZoneById(zoneId: RocketZoneId | null | undefined) {
+  if (!zoneId) {
+    return null;
+  }
+
+  return ROCKET_ZONES.find((zone) => zone.id === zoneId) ?? null;
+}
