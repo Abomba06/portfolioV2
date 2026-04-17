@@ -13,7 +13,7 @@ type RocketModelProps = ThreeElements["group"] & {
   selectedZoneId: RocketZoneId | null;
 };
 
-const MODEL_PATH = "/models/atlas-v-551.glb";
+const MODEL_PATH = "/models/rocket-detailed.glb";
 const TARGET_HEIGHT = 10;
 
 function inferZoneIdFromNormalizedHeight(normalizedHeight: number): RocketZoneId {
