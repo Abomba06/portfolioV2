@@ -5,6 +5,7 @@ import { getZoneById, getZoneForProgress, RocketZoneId } from "@/lib/rocketZones
 import { ExperienceCanvas } from "./ExperienceCanvas";
 import { ScrollController } from "./ScrollController";
 import { SubsystemOverlay } from "./SubsystemOverlay";
+import { usePerformanceTier } from "./usePerformanceTier";
 import styles from "./ExperienceShell.module.css";
 
 export function ExperienceShell() {
@@ -12,6 +13,7 @@ export function ExperienceShell() {
   const [progress, setProgress] = useState(0);
   const [hoveredZoneId, setHoveredZoneId] = useState<RocketZoneId | null>(null);
   const [selectedZoneId, setSelectedZoneId] = useState<RocketZoneId | null>(null);
+  const { isLowPerformance } = usePerformanceTier();
 
   const activeZone = useMemo(() => getZoneForProgress(progress), [progress]);
   const previewZone = useMemo(
@@ -49,6 +51,7 @@ export function ExperienceShell() {
               progress={progress}
               hoveredZoneId={selectedZoneId ? null : hoveredZoneId}
               selectedZoneId={selectedZoneId}
+              isLowPerformance={isLowPerformance}
               onHoverZone={(zoneId) => {
                 if (!selectedZoneId) {
                   setHoveredZoneId(zoneId);
@@ -63,8 +66,9 @@ export function ExperienceShell() {
               </h1>
               <p className={styles.copy}>{previewZone.description}</p>
               <div className={styles.status}>
-                <span>Stage 4</span>
+                <span>Polish Pass</span>
                 <span>{previewZone.label}</span>
+                {isLowPerformance ? <span>Optimized Mode</span> : null}
               </div>
               <div className={styles.interactionPanel}>
                 <span className={styles.interactionEyebrow}>Rocket interface</span>

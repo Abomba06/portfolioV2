@@ -9,6 +9,7 @@ type ExperienceCanvasProps = {
   progress: number;
   hoveredZoneId: RocketZoneId | null;
   selectedZoneId: RocketZoneId | null;
+  isLowPerformance: boolean;
   onHoverZone: (zoneId: RocketZoneId | null) => void;
   onSelectZone: (zoneId: RocketZoneId) => void;
 };
@@ -17,6 +18,7 @@ export function ExperienceCanvas({
   progress,
   hoveredZoneId,
   selectedZoneId,
+  isLowPerformance,
   onHoverZone,
   onSelectZone,
 }: ExperienceCanvasProps) {
@@ -33,6 +35,7 @@ export function ExperienceCanvas({
           progress={progress}
           hoveredZoneId={hoveredZoneId}
           selectedZoneId={selectedZoneId}
+          isLowPerformance={isLowPerformance}
           onHoverZone={onHoverZone}
           onSelectZone={onSelectZone}
         />

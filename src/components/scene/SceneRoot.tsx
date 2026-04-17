@@ -3,6 +3,7 @@
 import { Environment, Float, Sparkles, Stars } from "@react-three/drei";
 import { getZoneForProgress, RocketZoneId } from "@/lib/rocketZones";
 import { CameraRig } from "./camera/CameraRig";
+import { SubsystemChamber } from "./detail/SubsystemChamber";
 import { SubsystemFocus } from "./detail/SubsystemFocus";
 import { RocketModel } from "./rocket/RocketModel";
 import { RocketZones } from "./rocket/RocketZones";
@@ -12,6 +13,7 @@ type SceneRootProps = {
   progress: number;
   hoveredZoneId: RocketZoneId | null;
   selectedZoneId: RocketZoneId | null;
+  isLowPerformance: boolean;
   onHoverZone: (zoneId: RocketZoneId | null) => void;
   onSelectZone: (zoneId: RocketZoneId) => void;
 };
@@ -20,6 +22,7 @@ export function SceneRoot({
   progress,
   hoveredZoneId,
   selectedZoneId,
+  isLowPerformance,
   onHoverZone,
   onSelectZone,
 }: SceneRootProps) {
@@ -32,25 +35,25 @@ export function SceneRoot({
       <Stars
         radius={120}
         depth={80}
-        count={5000}
-        factor={4}
+        count={isLowPerformance ? 2200 : 5000}
+        factor={isLowPerformance ? 3 : 4}
         saturation={0}
         fade
-        speed={0.35}
+        speed={isLowPerformance ? 0.18 : 0.35}
       />
       <Sparkles
-        count={180}
-        size={2.1}
-        speed={0.18}
-        opacity={0.45}
+        count={isLowPerformance ? 70 : 180}
+        size={isLowPerformance ? 1.6 : 2.1}
+        speed={isLowPerformance ? 0.08 : 0.18}
+        opacity={isLowPerformance ? 0.28 : 0.45}
         scale={[12, 18, 12]}
         color="#89d8ff"
       />
       <Float
-        speed={1}
-        rotationIntensity={0.15}
-        floatIntensity={0.45}
-        floatingRange={[-0.15, 0.2]}
+        speed={isLowPerformance ? 0.7 : 1}
+        rotationIntensity={isLowPerformance ? 0.08 : 0.15}
+        floatIntensity={isLowPerformance ? 0.28 : 0.45}
+        floatingRange={isLowPerformance ? [-0.08, 0.12] : [-0.15, 0.2]}
       >
         <group onPointerMissed={() => onHoverZone(null)}>
           <RocketModel
@@ -65,6 +68,7 @@ export function SceneRoot({
             onHoverZone={onHoverZone}
             onSelectZone={onSelectZone}
           />
+          <SubsystemChamber selectedZoneId={selectedZoneId} isLowPerformance={isLowPerformance} />
           <SubsystemFocus selectedZoneId={selectedZoneId} />
         </group>
       </Float>
