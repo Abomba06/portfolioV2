@@ -71,3 +71,14 @@ export function getZoneById(zoneId: RocketZoneId | null | undefined) {
 
   return ROCKET_ZONES.find((zone) => zone.id === zoneId) ?? null;
 }
+
+export function getZoneCenterProgress(zoneId: RocketZoneId) {
+  const zone = getZoneById(zoneId);
+
+  if (!zone) {
+    return 0;
+  }
+
+  const [start, end] = zone.progressRange;
+  return (start + end) / 2;
+}

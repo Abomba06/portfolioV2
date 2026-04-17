@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { getZoneById, getZoneForProgress, RocketZoneId } from "@/lib/rocketZones";
+import { getZoneById, getZoneCenterProgress, getZoneForProgress, RocketZoneId } from "@/lib/rocketZones";
 import { ExperienceCanvas } from "./ExperienceCanvas";
 import { ScrollController } from "./ScrollController";
 import { SubsystemOverlay } from "./SubsystemOverlay";
+import { TrajectoryRail } from "./TrajectoryRail";
 import { usePerformanceTier } from "./usePerformanceTier";
 import styles from "./ExperienceShell.module.css";
 
@@ -41,12 +42,52 @@ export function ExperienceShell() {
     };
   }, [scrollContainer, selectedZoneId]);
 
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && selectedZoneId) {
+        setHoveredZoneId(null);
+        setSelectedZoneId(null);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [selectedZoneId]);
+
+  const jumpToZone = (zoneId: RocketZoneId) => {
+    if (selectedZoneId) {
+      setSelectedZoneId(zoneId);
+      setHoveredZoneId(null);
+      return;
+    }
+
+    if (!scrollContainer) {
+      return;
+    }
+
+    const targetProgress = getZoneCenterProgress(zoneId);
+    const maxScroll = scrollContainer.scrollHeight - scrollContainer.clientHeight;
+    scrollContainer.scrollTo({
+      top: maxScroll * targetProgress,
+      behavior: "smooth",
+    });
+  };
+
   return (
     <main className={styles.shell}>
       <div className={styles.scrollViewport} ref={setScrollContainer}>
         <ScrollController scroller={scrollContainer} onProgress={setProgress} />
         <section className={styles.stage}>
           <div className={styles.stickyScene}>
+            <TrajectoryRail
+              activeZoneId={activeZone.id}
+              hoveredZoneId={hoveredZoneId}
+              selectedZoneId={selectedZoneId}
+              onJumpToZone={jumpToZone}
+            />
             <ExperienceCanvas
               progress={progress}
               hoveredZoneId={selectedZoneId ? null : hoveredZoneId}
