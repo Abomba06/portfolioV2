@@ -101,9 +101,9 @@ export function ExperienceShell() {
               onSelectZone={setSelectedZoneId}
             />
             <div className={styles.overlay}>
-              <div className={styles.kicker}>IMMERSIVE ROCKET PORTFOLIO</div>
+              <div className={styles.kicker}>IMMERSIVE ENERGY SYSTEM</div>
               <h1 className={styles.title}>
-                {selectedZoneId ? `Entering the ${previewZone.label}.` : "Travel the rocket instead of scrolling a page."}
+                {selectedZoneId ? `Expanding the ${previewZone.label}.` : "Move through a living system instead of scrolling a page."}
               </h1>
               <p className={styles.copy}>{previewZone.description}</p>
               <div className={styles.status}>
@@ -112,13 +112,13 @@ export function ExperienceShell() {
                 {isLowPerformance ? <span>Optimized Mode</span> : null}
               </div>
               <div className={styles.interactionPanel}>
-                <span className={styles.interactionEyebrow}>Rocket interface</span>
+                <span className={styles.interactionEyebrow}>System interface</span>
                 <p className={styles.interactionCopy}>
                   {selectedZoneId
-                    ? `Camera locked into ${previewZone.shortLabel}. Use the return control to pull back out to the full vessel.`
+                    ? `Camera locked into ${previewZone.shortLabel}. Use the return control to pull back into the full field.`
                     : hoveredZoneId
                     ? `Hovering ${previewZone.shortLabel}. Click to lock this subsystem.`
-                    : "Move across the rocket to reveal its interactive regions. Click any section to arm it for entry."}
+                    : "Move across the field to reveal active structures. Click any region to expand that subsystem."}
                 </p>
               </div>
               {selectedZoneId ? (
@@ -130,7 +130,7 @@ export function ExperienceShell() {
                     setSelectedZoneId(null);
                   }}
                 >
-                  Return To Rocket
+                  Return To Field
                 </button>
               ) : null}
               <div className={styles.progressBlock}>

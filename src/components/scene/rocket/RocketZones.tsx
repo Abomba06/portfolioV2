@@ -13,21 +13,21 @@ type RocketZonesProps = {
 type ZoneMeshConfig = {
   id: RocketZoneId;
   position: [number, number, number];
-  shape: "cylinder" | "cone";
+  shape: "sphere" | "cylinder";
   args: [number, number, number, number?];
 };
 
 const zoneMeshes: ZoneMeshConfig[] = [
-  { id: "noseVision", position: [0, 4.05, 0], shape: "cone", args: [1.1, 2.45, 24] },
-  { id: "upperBodyCoding", position: [0, 2.45, 0], shape: "cylinder", args: [1.18, 1.12, 1.95, 32] },
-  { id: "coreAchievements", position: [0, 0.15, 0], shape: "cylinder", args: [1.25, 1.18, 2.45, 32] },
+  { id: "noseVision", position: [0, 4.35, -0.15], shape: "sphere", args: [1.1, 28, 28] },
+  { id: "upperBodyCoding", position: [0.05, 2.35, -0.35], shape: "sphere", args: [1.45, 28, 28] },
+  { id: "coreAchievements", position: [0, 0.35, -0.25], shape: "sphere", args: [1.55, 28, 28] },
   {
     id: "lowerBodyEngineering",
-    position: [0, -2.15, 0],
+    position: [0, -2.05, -0.32],
     shape: "cylinder",
-    args: [1.34, 1.2, 1.95, 32],
+    args: [1.4, 1.3, 2.2, 32],
   },
-  { id: "thrustersDrive", position: [0, -3.75, 0], shape: "cylinder", args: [1.45, 0.95, 1.25, 32] },
+  { id: "thrustersDrive", position: [0, -3.85, -0.25], shape: "cylinder", args: [1.1, 0.55, 2.25, 24] },
 ];
 
 function ZoneCollider({
@@ -63,8 +63,8 @@ function ZoneCollider({
       onPointerOut={handlePointerOut}
       onClick={handleClick}
     >
-      {config.shape === "cone" ? (
-        <coneGeometry args={config.args as [number, number, number]} />
+      {config.shape === "sphere" ? (
+        <sphereGeometry args={config.args as [number, number, number]} />
       ) : (
         <cylinderGeometry args={config.args as [number, number, number, number]} />
       )}

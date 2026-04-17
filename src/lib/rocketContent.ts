@@ -20,10 +20,10 @@ export type RocketContentEntry = {
 
 export const ROCKET_CONTENT: Record<RocketZoneId, RocketContentEntry> = {
   noseVision: {
-    eyebrow: "Forward Observatory",
+    eyebrow: "Center Core",
     title: "Vision And Future Direction",
     intro:
-      "This chamber frames long-range goals, future builds, and the kind of systems I want to shape over the next phase of my work.",
+      "This core frames long-range goals, future builds, and the kind of systems I want to shape over the next phase of my work.",
     sections: [
       {
         heading: "Goals",
@@ -54,10 +54,10 @@ export const ROCKET_CONTENT: Record<RocketZoneId, RocketContentEntry> = {
     ],
   },
   upperBodyCoding: {
-    eyebrow: "Control Room",
+    eyebrow: "Coding Network",
     title: "Coding Systems",
     intro:
-      "Software work is presented here as a live system: projects, tooling, and technical strengths arranged like mission controls inside the upper hull.",
+      "Software work is presented here as a live network: projects, tooling, and technical strengths arranged as active nodes inside the system.",
     sections: [
       {
         heading: "Projects",
@@ -89,10 +89,10 @@ export const ROCKET_CONTENT: Record<RocketZoneId, RocketContentEntry> = {
     ],
   },
   coreAchievements: {
-    eyebrow: "Milestone Core",
+    eyebrow: "Achievement Rings",
     title: "Achievements And Momentum",
     intro:
-      "The center of the rocket holds the record of progress so far: work experience, academic wins, and competitive environments that shaped execution.",
+      "This layered ring system holds the record of progress so far: work experience, academic wins, and competitive environments that shaped execution.",
     sections: [
       {
         heading: "Professional Experience",
@@ -124,7 +124,7 @@ export const ROCKET_CONTENT: Record<RocketZoneId, RocketContentEntry> = {
     ],
   },
   lowerBodyEngineering: {
-    eyebrow: "Engineering Bay",
+    eyebrow: "Engineering Grid",
     title: "Mechanical And Build Thinking",
     intro:
       "This subsystem is about how things are put together: structural logic, mechanical curiosity, and the interest in systems that perform under load.",
@@ -154,10 +154,10 @@ export const ROCKET_CONTENT: Record<RocketZoneId, RocketContentEntry> = {
     ],
   },
   thrustersDrive: {
-    eyebrow: "Propulsion Core",
+    eyebrow: "Drive Streams",
     title: "Drive And Ambition",
     intro:
-      "The engine section speaks to the internal force behind the work: discipline, ambition, and the push toward harder and more meaningful projects.",
+      "This accelerating edge of the field speaks to the internal force behind the work: discipline, ambition, and the push toward harder and more meaningful projects.",
     sections: [
       {
         heading: "Motivation",

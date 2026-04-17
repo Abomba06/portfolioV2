@@ -10,11 +10,11 @@ type ZoneBeaconsProps = {
 };
 
 const beaconAnchors: Record<RocketZoneId, [number, number, number]> = {
-  noseVision: [1.85, 4.35, 0.25],
-  upperBodyCoding: [1.9, 2.45, 0.2],
-  coreAchievements: [2.05, 0.35, 0.2],
-  lowerBodyEngineering: [1.95, -1.95, 0.2],
-  thrustersDrive: [1.75, -3.55, 0.2],
+  noseVision: [1.75, 4.4, 0.15],
+  upperBodyCoding: [1.95, 2.55, -0.1],
+  coreAchievements: [2.05, 0.45, -0.05],
+  lowerBodyEngineering: [1.95, -1.9, -0.08],
+  thrustersDrive: [1.55, -3.75, -0.12],
 };
 
 export function ZoneBeacons({ hoveredZoneId, selectedZoneId, isLowPerformance }: ZoneBeaconsProps) {

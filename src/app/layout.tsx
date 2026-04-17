@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Immersive Rocket Portfolio",
-  description: "A cinematic 3D rocket portfolio experience.",
+  title: "Immersive Energy System",
+  description: "A cinematic 3D neural and energy system portfolio experience.",
 };
 
 export default function RootLayout({

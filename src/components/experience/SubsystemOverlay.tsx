@@ -31,16 +31,16 @@ export function SubsystemOverlay({ zoneId }: SubsystemOverlayProps) {
 
       <div className={styles.metrics}>
         <div className={styles.metric}>
-          <span className={styles.metricLabel}>Zone</span>
+          <span className={styles.metricLabel}>Field</span>
           <span className={styles.metricValue}>{zone.shortLabel}</span>
         </div>
         <div className={styles.metric}>
-          <span className={styles.metricLabel}>Panels</span>
+          <span className={styles.metricLabel}>Layers</span>
           <span className={styles.metricValue}>{content.sections.length}</span>
         </div>
         <div className={styles.metric}>
           <span className={styles.metricLabel}>Status</span>
-          <span className={styles.metricValue}>Active</span>
+          <span className={styles.metricValue}>Live</span>
         </div>
       </div>
 

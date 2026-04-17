@@ -8,11 +8,11 @@ type SubsystemFocusProps = {
 };
 
 const focusAnchors: Record<RocketZoneId, [number, number, number]> = {
-  noseVision: [0.1, 4.1, 0],
-  upperBodyCoding: [0.1, 2.35, 0],
-  coreAchievements: [0.05, 0.45, 0],
-  lowerBodyEngineering: [0, -1.9, 0],
-  thrustersDrive: [0, -3.35, 0],
+  noseVision: [0, 4.25, -0.1],
+  upperBodyCoding: [0.05, 2.35, -0.25],
+  coreAchievements: [0, 0.35, -0.18],
+  lowerBodyEngineering: [0, -1.95, -0.24],
+  thrustersDrive: [0, -3.55, -0.2],
 };
 
 export function SubsystemFocus({ selectedZoneId }: SubsystemFocusProps) {

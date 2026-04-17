@@ -17,7 +17,7 @@ export function TrajectoryRail({
   onJumpToZone,
 }: TrajectoryRailProps) {
   return (
-    <nav className={styles.rail} aria-label="Rocket trajectory navigation">
+    <nav className={styles.rail} aria-label="Energy system navigation">
       <div className={styles.line} />
       {ROCKET_ZONES.map((zone) => {
         const isActive = zone.id === activeZoneId;
