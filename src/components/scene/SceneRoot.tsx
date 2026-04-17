@@ -8,6 +8,7 @@ import { SubsystemFocus } from "./detail/SubsystemFocus";
 import { RocketModel } from "./rocket/RocketModel";
 import { ZoneBeacons } from "./rocket/ZoneBeacons";
 import { RocketZones } from "./rocket/RocketZones";
+import { SceneEffects } from "./world/SceneEffects";
 import { SceneLighting } from "./world/SceneLighting";
 
 type SceneRootProps = {
@@ -79,6 +80,10 @@ export function SceneRoot({
         </group>
       </Float>
       <Environment preset="night" />
+      <SceneEffects
+        selectedZoneId={selectedZoneId}
+        isLowPerformance={isLowPerformance}
+      />
     </>
   );
 }
