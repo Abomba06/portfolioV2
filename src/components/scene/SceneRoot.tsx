@@ -6,6 +6,7 @@ import { CameraRig } from "./camera/CameraRig";
 import { SubsystemChamber } from "./detail/SubsystemChamber";
 import { SubsystemFocus } from "./detail/SubsystemFocus";
 import { RocketModel } from "./rocket/RocketModel";
+import { ZoneBeacons } from "./rocket/ZoneBeacons";
 import { RocketZones } from "./rocket/RocketZones";
 import { SceneLighting } from "./world/SceneLighting";
 
@@ -67,6 +68,11 @@ export function SceneRoot({
             selectedZoneId={selectedZoneId}
             onHoverZone={onHoverZone}
             onSelectZone={onSelectZone}
+          />
+          <ZoneBeacons
+            hoveredZoneId={hoveredZoneId}
+            selectedZoneId={selectedZoneId}
+            isLowPerformance={isLowPerformance}
           />
           <SubsystemChamber selectedZoneId={selectedZoneId} isLowPerformance={isLowPerformance} />
           <SubsystemFocus selectedZoneId={selectedZoneId} />

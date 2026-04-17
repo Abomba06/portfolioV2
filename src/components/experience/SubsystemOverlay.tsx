@@ -22,10 +22,26 @@ export function SubsystemOverlay({ zoneId }: SubsystemOverlayProps) {
 
   return (
     <aside className={styles.panel} style={{ ["--zone-color" as string]: zone.lightColor }}>
+      <div className={styles.scanlines} />
       <div className={styles.header}>
         <span className={styles.eyebrow}>{content.eyebrow}</span>
         <h2 className={styles.title}>{content.title}</h2>
         <p className={styles.intro}>{content.intro}</p>
+      </div>
+
+      <div className={styles.metrics}>
+        <div className={styles.metric}>
+          <span className={styles.metricLabel}>Zone</span>
+          <span className={styles.metricValue}>{zone.shortLabel}</span>
+        </div>
+        <div className={styles.metric}>
+          <span className={styles.metricLabel}>Panels</span>
+          <span className={styles.metricValue}>{content.sections.length}</span>
+        </div>
+        <div className={styles.metric}>
+          <span className={styles.metricLabel}>Status</span>
+          <span className={styles.metricValue}>Active</span>
+        </div>
       </div>
 
       <div className={styles.sectionGrid}>

@@ -17,7 +17,24 @@
   pointer-events: auto;
 }
 
+.scanlines {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.05) 0,
+      rgba(255, 255, 255, 0) 3px,
+      rgba(255, 255, 255, 0) 9px
+    );
+  background-size: 100% 10px;
+  mix-blend-mode: soft-light;
+  opacity: 0.18;
+  pointer-events: none;
+}
+
 .header {
+  position: relative;
   margin-bottom: 1rem;
 }
 
@@ -43,7 +60,38 @@
   line-height: 1.6;
 }
 
+.metrics {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.metric {
+  padding: 0.8rem 0.9rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 0.9rem;
+  background: rgba(11, 20, 34, 0.68);
+}
+
+.metricLabel {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 0.68rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--zone-color) 65%, white 35%);
+}
+
+.metricValue {
+  display: block;
+  font-size: 1rem;
+  color: #eef8ff;
+}
+
 .sectionGrid {
+  position: relative;
   display: grid;
   gap: 1rem;
 }
@@ -104,5 +152,9 @@
     width: auto;
     max-height: min(55vh, 34rem);
     padding: 1rem;
+  }
+
+  .metrics {
+    grid-template-columns: 1fr;
   }
 }
