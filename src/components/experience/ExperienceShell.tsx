@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { getZoneById, getZoneForProgress, RocketZoneId } from "@/lib/rocketZones";
 import { ExperienceCanvas } from "./ExperienceCanvas";
 import { ScrollController } from "./ScrollController";
+import { SubsystemOverlay } from "./SubsystemOverlay";
 import styles from "./ExperienceShell.module.css";
 
 export function ExperienceShell() {
@@ -94,6 +95,7 @@ export function ExperienceShell() {
                 </div>
               </div>
             </div>
+            <SubsystemOverlay zoneId={selectedZoneId} />
           </div>
         </section>
       </div>

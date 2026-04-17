@@ -35,6 +35,7 @@
   justify-content: flex-end;
   gap: 1rem;
   padding: 2rem;
+  max-width: 48rem;
   pointer-events: none;
   background:
     linear-gradient(180deg, rgba(4, 7, 13, 0.08) 0%, rgba(4, 7, 13, 0) 35%),
@@ -154,6 +155,7 @@
 @media (max-width: 768px) {
   .overlay {
     padding: 1.25rem;
+    max-width: none;
   }
 
   .title {
