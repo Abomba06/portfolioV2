@@ -1,0 +1,174 @@
+========================
+PROJECT: IMMERSIVE ROCKET PORTFOLIO
+========================
+
+SECTION 1 — CORE INSTRUCTION
+I want you to build me a personal website, but this must NOT be a normal portfolio website.
+
+Do NOT create a standard scrolling page with stacked sections like hero, about, projects, and contact. Do NOT use flat cards, simple fade-in animations, or template-based layouts.
+
+Instead, build a cinematic, interactive 3D experience set in outer space. The website should feel like an explorable digital world, not a webpage.
+
+The entire experience must revolve around a large, high-quality 3D rocket floating in space. The rocket is the central concept, navigation system, and storytelling structure of the site.
+
+
+SECTION 2 — CORE CONCEPT & METAPHOR
+The rocket represents me, my ambition, my trajectory, and the systems that power my work.
+
+Each part of the rocket corresponds to a part of my life:
+
+- Nose (top): Identity, vision, and future goals
+- Upper body: Coding, software, AI, and technical systems
+- Core body: Experience, education, achievements, milestones
+- Lower body: Engineering, building, mechanical interests
+- Thrusters: Motivation, drive, ambition
+
+The rocket must NOT be decorative. It must function as the primary interface and structure of the entire site.
+
+
+SECTION 3 — SCROLL EXPERIENCE
+Scrolling must NOT behave like a normal webpage.
+
+Instead:
+- Scrolling moves the camera along the rocket from top to bottom
+- The user feels like they are traveling alongside the rocket in 3D space
+- Different rocket sections come into focus as the user scrolls
+- The environment (stars, particles, lighting) moves with depth and parallax
+
+As the user scrolls:
+- Sections subtly highlight when in focus
+- Lighting and glow shift dynamically
+- The rocket has slight idle motion (drifting, vibration, subtle engine activity)
+
+The experience should feel smooth, cinematic, and immersive — not like reading a page.
+
+
+SECTION 4 — CLICK INTERACTIONS (CRITICAL)
+Each major section of the rocket must be clickable.
+
+When clicked:
+- The camera smoothly zooms into that specific part of the rocket
+- The environment transitions into a detailed subsystem view
+- This is NOT a page change — it is a continuous animated transition
+
+Examples:
+- Clicking the coding section → zoom into a futuristic control room with panels showing coding projects and technical work
+- Clicking the engineering section → zoom into the engine/thruster system showing mechanical/engineering projects
+- Clicking the core → zoom into a structured interior showing achievements, experience, and milestones
+
+Each zoomed-in view should feel like entering a different environment inside the rocket.
+
+There must always be a clear way to return (zoom back out) to the full rocket.
+
+
+SECTION 5 — VISUAL STYLE
+The visual style must be:
+
+- Futuristic
+- Dark and premium
+- Cinematic
+- Polished and high-end
+
+Use:
+- Outer space environment
+- Stars and depth
+- Subtle particles
+- Metallic materials
+- Glowing thrusters
+- Soft reflections
+- Elegant modern typography
+- Clean UI overlays for readability
+
+Avoid:
+- Cartoonish or playful styles
+- Cluttered UI
+- Generic startup visuals
+- Flat portfolio layouts
+- Anything that looks like a template
+
+The site should feel like a blend of:
+- a luxury digital portfolio
+- a sci-fi interface
+- an engineering-inspired system
+- an interactive art experience
+
+
+SECTION 6 — CONTENT PRESENTATION
+Do NOT display content as plain sections on a blank background.
+
+Instead:
+- Coding projects appear within futuristic panels/screens inside the rocket
+- Engineering work appears integrated into engine or mechanical environments
+- Achievements appear as illuminated modules or structural elements
+- Vision/future content appears near the forward/top of the rocket
+
+Content must feel embedded into the environment, not placed on top of it.
+
+
+SECTION 7 — EXPERIENCE & FEEL
+The website should communicate:
+
+- ambition
+- intelligence
+- technical skill
+- creativity
+- precision
+- systems thinking
+- future-focused mindset
+
+The rocket should symbolize:
+- upward movement
+- power
+- discipline
+- complexity
+- exploration
+
+The user should immediately feel that this is a unique, high-level personal brand experience.
+
+
+SECTION 8 — INTERACTION QUALITY REQUIREMENTS
+The experience must be smooth and high-quality:
+
+- Smooth scroll-driven camera motion
+- Cinematic transitions
+- Hover feedback on interactive rocket parts
+- Subtle animations (not overwhelming)
+- High-performance feel
+- Clear readability for text
+- Intuitive navigation even within the immersive design
+
+Include a fallback or simplified version for lower-performance devices if needed.
+
+
+SECTION 9 — STRICT ANTI-GENERIC RULES
+Do NOT build:
+
+- A normal hero section with a title and button
+- A vertical scrolling portfolio with sections
+- A site where the rocket is just a background image
+- A generic dark-themed developer portfolio
+- A template-based layout with added animations
+
+If the result looks like a normal portfolio with a 3D object added, it is incorrect.
+
+The rocket must define the structure, navigation, and interaction of the entire experience.
+
+
+SECTION 10 — TECHNICAL DIRECTION
+Use modern web technologies capable of delivering a premium interactive experience.
+
+Focus on:
+- 3D rendering
+- Camera movement
+- Scroll-linked animations
+- Clickable 3D regions
+- Smooth transitions between views
+- Responsive design considerations
+
+The result should feel custom-built, advanced, and intentional.
+
+
+SECTION 11 — FINAL DIRECTIVE
+Treat this project as an interactive 3D experience first and a portfolio second.
+
+It should feel closer to an explorable digital installation than a standard personal website.
