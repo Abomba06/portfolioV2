@@ -26,7 +26,7 @@ export function ExperienceCanvas({
     <Canvas
       camera={{ position: [0, 0.5, 9], fov: 32 }}
       dpr={[1, 1.75]}
-      gl={{ antialias: !isLowPerformance, alpha: true }}
+      gl={{ antialias: true, alpha: true }}
     >
       <color attach="background" args={["#02050a"]} />
       <fog attach="fog" args={["#02050a", 12, 28]} />
