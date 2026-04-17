@@ -4,7 +4,11 @@ import { Canvas } from "@react-three/fiber";
 import { Suspense } from "react";
 import { SceneRoot } from "@/components/scene/SceneRoot";
 
-export function ExperienceCanvas() {
+type ExperienceCanvasProps = {
+  progress: number;
+};
+
+export function ExperienceCanvas({ progress }: ExperienceCanvasProps) {
   return (
     <Canvas
       camera={{ position: [0, 0.5, 9], fov: 32 }}
@@ -14,7 +18,7 @@ export function ExperienceCanvas() {
       <color attach="background" args={["#02050a"]} />
       <fog attach="fog" args={["#02050a", 12, 28]} />
       <Suspense fallback={null}>
-        <SceneRoot />
+        <SceneRoot progress={progress} />
       </Suspense>
     </Canvas>
   );

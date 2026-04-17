@@ -2,8 +2,16 @@
 
 import { Cylinder, Html, RoundedBox } from "@react-three/drei";
 import { ThreeElements } from "@react-three/fiber";
+import { ROCKET_ZONES, RocketZoneId } from "@/lib/rocketZones";
 
-function RocketBody() {
+type RocketModelProps = ThreeElements["group"] & {
+  progress: number;
+  activeZoneId: RocketZoneId;
+};
+
+function RocketBody({ activeZoneId }: { activeZoneId: RocketZoneId }) {
+  const accent = ROCKET_ZONES.find((zone) => zone.id === activeZoneId)?.lightColor ?? "#7cc7ff";
+
   return (
     <group>
       <mesh position={[0, 0.8, 0]} castShadow receiveShadow>
@@ -12,8 +20,8 @@ function RocketBody() {
           color="#bcc7d9"
           metalness={0.85}
           roughness={0.23}
-          emissive="#0b1421"
-          emissiveIntensity={0.35}
+          emissive={accent}
+          emissiveIntensity={0.2}
         />
       </mesh>
 
@@ -36,15 +44,27 @@ function RocketBody() {
   );
 }
 
-function PanelBands() {
+function PanelBands({ progress }: { progress: number }) {
   return (
     <group>
-      {[-0.9, 0.7, 2.25].map((y) => (
+      {[
+        { y: -0.95, start: 0.62, end: 0.92 },
+        { y: 0.7, start: 0.32, end: 0.66 },
+        { y: 2.25, start: 0.08, end: 0.4 },
+      ].map(({ y, start, end }) => {
+        const isFocused = progress >= start && progress <= end;
+
+        return (
         <mesh key={y} position={[0, y, 0]} rotation={[Math.PI / 2, 0, 0]}>
           <torusGeometry args={[0.84, 0.04, 20, 64]} />
-          <meshStandardMaterial color="#7bd8ff" emissive="#66d5ff" emissiveIntensity={0.65} />
+          <meshStandardMaterial
+            color={isFocused ? "#c3eeff" : "#7bd8ff"}
+            emissive="#66d5ff"
+            emissiveIntensity={isFocused ? 1.4 : 0.65}
+          />
         </mesh>
-      ))}
+        );
+      })}
     </group>
   );
 }
@@ -116,11 +136,11 @@ function Label() {
   );
 }
 
-export function RocketModel(props: ThreeElements["group"]) {
+export function RocketModel({ activeZoneId, progress, ...groupProps }: RocketModelProps) {
   return (
-    <group {...props} rotation={[0.12, 0.3, -0.08]}>
-      <RocketBody />
-      <PanelBands />
+    <group {...groupProps} rotation={[0.12, 0.3, -0.08]}>
+      <RocketBody activeZoneId={activeZoneId} />
+      <PanelBands progress={progress} />
       <Fins />
       <Thrusters />
       <Label />

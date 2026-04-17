@@ -1,13 +1,22 @@
 "use client";
 
-import { Environment, Float, OrbitControls, Sparkles, Stars } from "@react-three/drei";
+import { Environment, Float, Sparkles, Stars } from "@react-three/drei";
+import { getZoneForProgress } from "@/lib/rocketZones";
+import { CameraRig } from "./camera/CameraRig";
 import { RocketModel } from "./rocket/RocketModel";
 import { SceneLighting } from "./world/SceneLighting";
 
-export function SceneRoot() {
+type SceneRootProps = {
+  progress: number;
+};
+
+export function SceneRoot({ progress }: SceneRootProps) {
+  const activeZone = getZoneForProgress(progress);
+
   return (
     <>
-      <SceneLighting />
+      <CameraRig progress={progress} />
+      <SceneLighting progress={progress} activeZoneId={activeZone.id} />
       <Stars
         radius={120}
         depth={80}
@@ -31,17 +40,9 @@ export function SceneRoot() {
         floatIntensity={0.45}
         floatingRange={[-0.15, 0.2]}
       >
-        <RocketModel />
+        <RocketModel progress={progress} activeZoneId={activeZone.id} />
       </Float>
       <Environment preset="night" />
-      <OrbitControls
-        enablePan={false}
-        enableZoom={false}
-        minPolarAngle={Math.PI / 3.2}
-        maxPolarAngle={(Math.PI / 3.2) * 2}
-        autoRotate
-        autoRotateSpeed={0.3}
-      />
     </>
   );
 }
