@@ -1,7 +1,9 @@
 "use client";
 
-import { Cylinder, Html, RoundedBox } from "@react-three/drei";
+import { Html, useGLTF } from "@react-three/drei";
 import { ThreeElements } from "@react-three/fiber";
+import { useLayoutEffect, useMemo } from "react";
+import { Mesh, MeshStandardMaterial, Object3D } from "three";
 import { ROCKET_ZONES, RocketZoneId } from "@/lib/rocketZones";
 
 type RocketModelProps = ThreeElements["group"] & {
@@ -11,129 +13,16 @@ type RocketModelProps = ThreeElements["group"] & {
   selectedZoneId: RocketZoneId | null;
 };
 
-function RocketBody({
-  activeZoneId,
-  hoveredZoneId,
-  selectedZoneId,
-}: {
-  activeZoneId: RocketZoneId;
-  hoveredZoneId: RocketZoneId | null;
-  selectedZoneId: RocketZoneId | null;
-}) {
-  const accent = ROCKET_ZONES.find((zone) => zone.id === activeZoneId)?.lightColor ?? "#7cc7ff";
+const MODEL_PATH = "/models/rocket.glb";
+
+function getInteractionAccent(
+  activeZoneId: RocketZoneId,
+  hoveredZoneId: RocketZoneId | null,
+  selectedZoneId: RocketZoneId | null,
+) {
+  const baseAccent = ROCKET_ZONES.find((zone) => zone.id === activeZoneId)?.lightColor ?? "#7cc7ff";
   const interactionZoneId = hoveredZoneId ?? selectedZoneId ?? activeZoneId;
-  const interactionAccent =
-    ROCKET_ZONES.find((zone) => zone.id === interactionZoneId)?.lightColor ?? accent;
-
-  return (
-    <group>
-      <mesh position={[0, 0.8, 0]} castShadow receiveShadow>
-        <cylinderGeometry args={[0.78, 0.92, 5.2, 48, 1, false]} />
-        <meshStandardMaterial
-          color="#bcc7d9"
-          metalness={0.85}
-          roughness={0.23}
-          emissive={interactionAccent}
-          emissiveIntensity={hoveredZoneId || selectedZoneId ? 0.35 : 0.2}
-        />
-      </mesh>
-
-      <mesh position={[0, 4, 0]} castShadow receiveShadow>
-        <coneGeometry args={[0.78, 2.1, 48]} />
-        <meshStandardMaterial
-          color="#dce6f3"
-          metalness={0.75}
-          roughness={0.2}
-          emissive="#102340"
-          emissiveIntensity={0.25}
-        />
-      </mesh>
-
-      <mesh position={[0, -2.1, 0]} castShadow receiveShadow>
-        <cylinderGeometry args={[0.92, 1.05, 0.9, 48]} />
-        <meshStandardMaterial color="#596579" metalness={0.8} roughness={0.38} />
-      </mesh>
-    </group>
-  );
-}
-
-function PanelBands({
-  progress,
-  hoveredZoneId,
-  selectedZoneId,
-}: {
-  progress: number;
-  hoveredZoneId: RocketZoneId | null;
-  selectedZoneId: RocketZoneId | null;
-}) {
-  return (
-    <group>
-      {[
-        { y: -0.95, start: 0.62, end: 0.92, zoneId: "lowerBodyEngineering" as const },
-        { y: 0.7, start: 0.32, end: 0.66, zoneId: "coreAchievements" as const },
-        { y: 2.25, start: 0.08, end: 0.4, zoneId: "upperBodyCoding" as const },
-      ].map(({ y, start, end, zoneId }) => {
-        const isFocused = progress >= start && progress <= end;
-        const isInteractive = hoveredZoneId === zoneId || selectedZoneId === zoneId;
-
-        return (
-          <mesh key={y} position={[0, y, 0]} rotation={[Math.PI / 2, 0, 0]}>
-            <torusGeometry args={[0.84, 0.04, 20, 64]} />
-            <meshStandardMaterial
-              color={isInteractive ? "#e6fbff" : isFocused ? "#c3eeff" : "#7bd8ff"}
-              emissive="#66d5ff"
-              emissiveIntensity={isInteractive ? 2.1 : isFocused ? 1.4 : 0.65}
-            />
-          </mesh>
-        );
-      })}
-    </group>
-  );
-}
-
-function Fins() {
-  return (
-    <group position={[0, -1.65, 0]}>
-      {[0, Math.PI / 2, Math.PI, (Math.PI * 3) / 2].map((rotation) => (
-        <RoundedBox
-          key={rotation}
-          args={[0.14, 1.75, 1.05]}
-          radius={0.05}
-          smoothness={4}
-          position={[Math.sin(rotation) * 0.98, -0.15, Math.cos(rotation) * 0.98]}
-          rotation={[0, rotation, rotation % Math.PI === 0 ? -0.22 : 0.22]}
-          castShadow
-          receiveShadow
-        >
-          <meshStandardMaterial color="#6d7687" metalness={0.78} roughness={0.34} />
-        </RoundedBox>
-      ))}
-    </group>
-  );
-}
-
-function Thrusters() {
-  return (
-    <group position={[0, -3.15, 0]}>
-      {[
-        [0, 0],
-        [0.58, 0],
-        [-0.58, 0],
-        [0, 0.58],
-        [0, -0.58],
-      ].map(([x, z], index) => (
-        <group key={`${x}-${z}-${index}`} position={[x, 0, z]}>
-          <Cylinder args={[0.2, 0.3, 1.15, 32]} castShadow receiveShadow>
-            <meshStandardMaterial color="#4f5564" metalness={0.82} roughness={0.28} />
-          </Cylinder>
-          <mesh position={[0, -0.78, 0]}>
-            <coneGeometry args={[0.18, 1.3, 24]} />
-            <meshBasicMaterial color="#56d3ff" transparent opacity={0.72} />
-          </mesh>
-        </group>
-      ))}
-    </group>
-  );
+  return ROCKET_ZONES.find((zone) => zone.id === interactionZoneId)?.lightColor ?? baseAccent;
 }
 
 function Label() {
@@ -165,17 +54,81 @@ export function RocketModel({
   selectedZoneId,
   ...groupProps
 }: RocketModelProps) {
+  const { scene } = useGLTF(MODEL_PATH);
+  const accent = getInteractionAccent(activeZoneId, hoveredZoneId, selectedZoneId);
+
+  const rocketScene = useMemo(() => {
+    const clone = scene.clone(true);
+
+    clone.traverse((child: Object3D) => {
+      const mesh = child as Mesh;
+      if (!mesh.isMesh) {
+        return;
+      }
+
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+
+      if (Array.isArray(mesh.material)) {
+        mesh.material = mesh.material.map((material) => material.clone());
+      } else if (mesh.material) {
+        mesh.material = mesh.material.clone();
+      }
+    });
+
+    return clone;
+  }, [scene]);
+
+  useLayoutEffect(() => {
+    rocketScene.traverse((child: Object3D) => {
+      const mesh = child as Mesh;
+      if (!mesh.isMesh || Array.isArray(mesh.material)) {
+        return;
+      }
+
+      const material = mesh.material as MeshStandardMaterial;
+      const isBand = mesh.name.startsWith("band_");
+      const isThrusterGlow = mesh.name.startsWith("thruster_glow_");
+      const isBody = mesh.name === "rocket_body";
+      const isNose = mesh.name === "rocket_nose";
+
+      if (isBody) {
+        material.emissive.set(accent);
+        material.emissiveIntensity = hoveredZoneId || selectedZoneId ? 0.35 : 0.2;
+      }
+
+      if (isNose) {
+        material.emissiveIntensity = activeZoneId === "noseVision" || selectedZoneId === "noseVision" ? 0.35 : 0.25;
+      }
+
+      if (isBand) {
+        const bandZoneId =
+          mesh.name === "band_upper"
+            ? "upperBodyCoding"
+            : mesh.name === "band_core"
+              ? "coreAchievements"
+              : "lowerBodyEngineering";
+        const [start, end] =
+          ROCKET_ZONES.find((zone) => zone.id === bandZoneId)?.progressRange ?? [0, 1];
+        const isInteractive = hoveredZoneId === bandZoneId || selectedZoneId === bandZoneId;
+
+        material.color.set(isInteractive ? "#e6fbff" : progress >= start && progress <= end ? "#c3eeff" : "#7bd8ff");
+        material.emissive.set("#66d5ff");
+        material.emissiveIntensity = isInteractive ? 2.1 : progress >= start && progress <= end ? 1.4 : 0.65;
+      }
+
+      if (isThrusterGlow) {
+        material.opacity = activeZoneId === "thrustersDrive" || selectedZoneId === "thrustersDrive" ? 0.92 : 0.72;
+      }
+    });
+  }, [accent, activeZoneId, hoveredZoneId, progress, rocketScene, selectedZoneId]);
+
   return (
-    <group {...groupProps} rotation={[0.12, 0.3, -0.08]}>
-      <RocketBody
-        activeZoneId={activeZoneId}
-        hoveredZoneId={hoveredZoneId}
-        selectedZoneId={selectedZoneId}
-      />
-      <PanelBands progress={progress} hoveredZoneId={hoveredZoneId} selectedZoneId={selectedZoneId} />
-      <Fins />
-      <Thrusters />
+    <group {...groupProps}>
+      <primitive object={rocketScene} />
       <Label />
     </group>
   );
 }
+
+useGLTF.preload(MODEL_PATH);
