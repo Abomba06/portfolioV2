@@ -24,73 +24,42 @@ const zoneAnchors: Record<RocketZoneId, [number, number, number]> = {
   noseVision: [0, 4.25, 0],
   upperBodyCoding: [0.1, 2.35, -0.2],
   coreAchievements: [0, 0.35, 0],
-  lowerBodyEngineering: [-0.1, -2.05, -0.15],
-  thrustersDrive: [0, -3.55, -0.1],
+  lowerBodyEngineering: [-0.05, -2.05, -0.18],
+  thrustersDrive: [0, -3.55, -0.16],
 };
 
 function getZoneColor(zoneId: RocketZoneId) {
   return ROCKET_ZONES.find((zone) => zone.id === zoneId)?.lightColor ?? "#7cc7ff";
 }
 
+function isZoneEmphasized(
+  zoneId: RocketZoneId,
+  activeZoneId: RocketZoneId,
+  hoveredZoneId: RocketZoneId | null,
+  selectedZoneId: RocketZoneId | null,
+) {
+  return zoneId === activeZoneId || zoneId === hoveredZoneId || zoneId === selectedZoneId;
+}
+
 function createRadialNodes(
   count: number,
   radius: number,
-  y: number,
-  zOffset: number,
+  center: [number, number, number],
   xScale = 1,
   yScale = 0.7,
+  zVariance = 0.25,
 ): NodePoint[] {
   return Array.from({ length: count }, (_, index) => {
     const angle = (index / count) * Math.PI * 2;
     return {
       position: [
-        Math.cos(angle) * radius * xScale,
-        y + Math.sin(angle) * radius * yScale,
-        zOffset + Math.sin(angle * 1.7) * 0.35,
+        center[0] + Math.cos(angle) * radius * xScale,
+        center[1] + Math.sin(angle) * radius * yScale,
+        center[2] + Math.sin(angle * 1.7) * zVariance,
       ],
-      scale: 0.08 + (index % 3) * 0.02,
+      scale: 0.07 + (index % 3) * 0.02,
     };
   });
-}
-
-function buildCodingNodes() {
-  return [
-    ...createRadialNodes(10, 1.15, 2.35, -0.3, 1.2, 0.55),
-    ...createRadialNodes(7, 0.72, 2.2, -0.75, 0.8, 0.8),
-  ];
-}
-
-function buildEngineeringNodes() {
-  return [
-    { position: [-1.1, -1.3, -0.25] as [number, number, number], scale: 0.12 },
-    { position: [1.1, -1.3, -0.25] as [number, number, number], scale: 0.12 },
-    { position: [-1.2, -2.3, -0.3] as [number, number, number], scale: 0.12 },
-    { position: [1.2, -2.3, -0.3] as [number, number, number], scale: 0.12 },
-    { position: [-0.72, -1.8, -0.58] as [number, number, number], scale: 0.1 },
-    { position: [0.72, -1.8, -0.58] as [number, number, number], scale: 0.1 },
-    { position: [0, -2.9, -0.45] as [number, number, number], scale: 0.16 },
-  ] satisfies NodePoint[];
-}
-
-function buildDriveNodes() {
-  return Array.from({ length: 12 }, (_, index) => {
-    const t = index / 11;
-    return {
-      position: [
-        (index % 2 === 0 ? -0.55 : 0.55) * (1 - t * 0.35),
-        -3.15 - t * 1.45,
-        -0.2 - t * 0.25,
-      ] as [number, number, number],
-      scale: 0.08 + (1 - t) * 0.07,
-    };
-  });
-}
-
-function buildAchievementNodes() {
-  return [
-    ...createRadialNodes(8, 0.82, 0.35, -0.22, 1.05, 0.9),
-    ...createRadialNodes(12, 1.28, 0.35, -0.45, 1.15, 1),
-  ];
 }
 
 function connectionPairs(points: NodePoint[], step = 1) {
@@ -114,6 +83,7 @@ function OrbitingArc({
   speed,
   tilt,
   opacity,
+  arc = Math.PI * 1.35,
 }: {
   position: [number, number, number];
   color: string;
@@ -121,6 +91,7 @@ function OrbitingArc({
   speed: number;
   tilt: [number, number, number];
   opacity: number;
+  arc?: number;
 }) {
   const ref = useRef<Group>(null);
 
@@ -135,7 +106,7 @@ function OrbitingArc({
   return (
     <group ref={ref} position={position} rotation={tilt}>
       <mesh>
-        <torusGeometry args={[radius, 0.02, 18, 72, Math.PI * 1.35]} />
+        <torusGeometry args={[radius, 0.02, 18, 72, arc]} />
         <meshBasicMaterial color={color} transparent opacity={opacity} />
       </mesh>
     </group>
@@ -155,7 +126,7 @@ function EnergyNode({
 }) {
   return (
     <mesh position={position} scale={scale}>
-      <sphereGeometry args={[1, 16, 16]} />
+      <sphereGeometry args={[1, 14, 14]} />
       <meshBasicMaterial color={color} transparent opacity={opacity} />
     </mesh>
   );
@@ -164,18 +135,16 @@ function EnergyNode({
 function EnergyPulses({
   zoneId,
   connections,
-  isFocused,
-  isInteractive,
+  emphasized,
 }: {
   zoneId: RocketZoneId;
   connections: ConnectionPair[];
-  isFocused: boolean;
-  isInteractive: boolean;
+  emphasized: boolean;
 }) {
   const color = getZoneColor(zoneId);
-  const pulseCount = Math.min(connections.length, isInteractive ? 6 : 3);
+  const pulseCount = Math.min(connections.length, emphasized ? 7 : 4);
   const offsets = useMemo(
-    () => Array.from({ length: pulseCount }, (_, index) => ((index * 0.31) % 1)),
+    () => Array.from({ length: pulseCount }, (_, index) => ((index * 0.19) % 1)),
     [pulseCount],
   );
   const meshesRef = useRef<(Mesh | null)[]>([]);
@@ -190,10 +159,10 @@ function EnergyPulses({
         return;
       }
 
-      const travel = (t * (isInteractive ? 0.42 : 0.22) + offset) % 1;
+      const travel = (t * (emphasized ? 0.55 : 0.3) + offset) % 1;
       const point = interpolatePoint(pair, travel);
       mesh.position.set(point[0], point[1], point[2]);
-      const scale = isInteractive ? 0.1 : isFocused ? 0.08 : 0.06;
+      const scale = emphasized ? 0.09 : 0.06;
       mesh.scale.setScalar(scale);
     });
   });
@@ -207,60 +176,315 @@ function EnergyPulses({
             meshesRef.current[index] = element;
           }}
         >
-          <sphereGeometry args={[1, 12, 12]} />
-          <meshBasicMaterial color={color} transparent opacity={isInteractive ? 0.9 : 0.65} />
+          <sphereGeometry args={[1, 10, 10]} />
+          <meshBasicMaterial color={color} transparent opacity={emphasized ? 0.95 : 0.65} />
         </mesh>
       ))}
     </group>
   );
 }
 
-function ZoneNetwork({
-  zoneId,
-  nodes,
+function VisionCore({
   activeZoneId,
   hoveredZoneId,
   selectedZoneId,
 }: {
-  zoneId: RocketZoneId;
-  nodes: NodePoint[];
   activeZoneId: RocketZoneId;
   hoveredZoneId: RocketZoneId | null;
   selectedZoneId: RocketZoneId | null;
 }) {
-  const color = getZoneColor(zoneId);
-  const isInteractive = hoveredZoneId === zoneId || selectedZoneId === zoneId;
-  const isFocused = activeZoneId === zoneId;
-  const opacity = isInteractive ? 0.95 : isFocused ? 0.72 : 0.42;
-  const connections = useMemo(() => connectionPairs(nodes), [nodes]);
+  const ref = useRef<Mesh>(null);
+  const color = getZoneColor("noseVision");
+  const emphasized = isZoneEmphasized("noseVision", activeZoneId, hoveredZoneId, selectedZoneId);
+
+  useFrame(({ clock }) => {
+    if (!ref.current) {
+      return;
+    }
+
+    const scale = 1 + Math.sin(clock.getElapsedTime() * 1.1) * 0.04;
+    ref.current.scale.setScalar(scale);
+  });
 
   return (
-    <group>
-      {connections.map(([start, end], index) => (
-        <Line
-          key={`${zoneId}-line-${index}`}
-          points={[start, end]}
-          color={color}
-          transparent
-          opacity={opacity * 0.42}
-          lineWidth={isInteractive ? 1.6 : 1}
-        />
-      ))}
-      <EnergyPulses
-        zoneId={zoneId}
-        connections={connections}
-        isFocused={isFocused}
-        isInteractive={isInteractive}
+    <group position={zoneAnchors.noseVision}>
+      <mesh ref={ref}>
+        <sphereGeometry args={[0.58, 40, 40]} />
+        <meshBasicMaterial color={color} transparent opacity={emphasized ? 0.96 : 0.78} />
+      </mesh>
+      <mesh scale={[2.4, 2.4, 2.4]}>
+        <sphereGeometry args={[0.58, 22, 22]} />
+        <meshBasicMaterial color={color} transparent opacity={emphasized ? 0.08 : 0.04} />
+      </mesh>
+      <OrbitingArc
+        position={[0, 0, 0]}
+        color={color}
+        radius={1.15}
+        speed={0.08}
+        tilt={[Math.PI / 2, 0.2, 0]}
+        opacity={0.24}
+        arc={Math.PI * 1.7}
       />
-      {nodes.map((node, index) => (
+      <OrbitingArc
+        position={[0, 0, 0]}
+        color="#dff8ff"
+        radius={1.5}
+        speed={-0.05}
+        tilt={[0.3, 0.6, Math.PI / 2]}
+        opacity={0.12}
+        arc={Math.PI * 1.35}
+      />
+    </group>
+  );
+}
+
+function CodingField({
+  activeZoneId,
+  hoveredZoneId,
+  selectedZoneId,
+}: {
+  activeZoneId: RocketZoneId;
+  hoveredZoneId: RocketZoneId | null;
+  selectedZoneId: RocketZoneId | null;
+}) {
+  const color = getZoneColor("upperBodyCoding");
+  const emphasized = isZoneEmphasized("upperBodyCoding", activeZoneId, hoveredZoneId, selectedZoneId);
+  const groupRef = useRef<Group>(null);
+  const layerA = useMemo(() => createRadialNodes(12, 1.1, [0.1, 2.35, -0.3], 1.25, 0.56, 0.32), []);
+  const layerB = useMemo(() => createRadialNodes(9, 0.72, [0.08, 2.15, -0.82], 0.95, 0.85, 0.22), []);
+  const layerC = useMemo(() => createRadialNodes(7, 0.52, [0.1, 2.55, 0.3], 0.8, 0.6, 0.18), []);
+  const connectionsA = useMemo(() => connectionPairs(layerA), [layerA]);
+  const connectionsB = useMemo(() => connectionPairs(layerB, 2), [layerB]);
+  const connectionsC = useMemo(() => connectionPairs(layerC), [layerC]);
+
+  useFrame(({ clock }) => {
+    if (!groupRef.current) {
+      return;
+    }
+
+    const t = clock.getElapsedTime();
+    groupRef.current.rotation.z = Math.sin(t * 0.28) * 0.06;
+    groupRef.current.position.x = Math.sin(t * 0.4) * 0.05;
+  });
+
+  const opacity = emphasized ? 0.92 : activeZoneId === "upperBodyCoding" ? 0.72 : 0.4;
+
+  return (
+    <group ref={groupRef}>
+      {[connectionsA, connectionsB, connectionsC].map((connections, layerIndex) =>
+        connections.map(([start, end], index) => (
+          <Line
+            key={`coding-${layerIndex}-${index}`}
+            points={[start, end]}
+            color={color}
+            transparent
+            opacity={opacity * (0.42 - layerIndex * 0.08)}
+            lineWidth={emphasized ? 1.5 : 1}
+          />
+        )),
+      )}
+      <EnergyPulses zoneId="upperBodyCoding" connections={[...connectionsA, ...connectionsB, ...connectionsC]} emphasized={emphasized} />
+      {[...layerA, ...layerB, ...layerC].map((node, index) => (
         <EnergyNode
-          key={`${zoneId}-node-${index}`}
+          key={`coding-node-${index}`}
           position={node.position}
           scale={node.scale}
           color={color}
           opacity={opacity}
         />
       ))}
+      <OrbitingArc
+        position={zoneAnchors.upperBodyCoding}
+        color={color}
+        radius={1.38}
+        speed={0.22}
+        tilt={[Math.PI / 2, 0, 0.4]}
+        opacity={0.18}
+      />
+    </group>
+  );
+}
+
+function EngineeringField({
+  activeZoneId,
+  hoveredZoneId,
+  selectedZoneId,
+}: {
+  activeZoneId: RocketZoneId;
+  hoveredZoneId: RocketZoneId | null;
+  selectedZoneId: RocketZoneId | null;
+}) {
+  const color = getZoneColor("lowerBodyEngineering");
+  const emphasized = isZoneEmphasized("lowerBodyEngineering", activeZoneId, hoveredZoneId, selectedZoneId);
+  const sliderRefs = useRef<(Group | null)[]>([]);
+  const opacity = emphasized ? 0.9 : activeZoneId === "lowerBodyEngineering" ? 0.68 : 0.34;
+
+  useFrame(({ clock }) => {
+    const t = clock.getElapsedTime();
+    sliderRefs.current.forEach((group, index) => {
+      if (!group) {
+        return;
+      }
+
+      group.position.y = Math.sin(t * 0.65 + index) * 0.22;
+      group.rotation.z = Math.sin(t * 0.4 + index) * 0.03;
+    });
+  });
+
+  return (
+    <group position={zoneAnchors.lowerBodyEngineering}>
+      {[-1.2, 0, 1.2].map((x, index) => (
+        <group
+          key={`engineering-column-${x}`}
+          ref={(element) => {
+            sliderRefs.current[index] = element;
+          }}
+          position={[x, 0, -0.32]}
+        >
+          <mesh scale={[0.16, 1.45, 0.16]}>
+            <boxGeometry args={[1, 1, 1]} />
+            <meshBasicMaterial color={color} transparent opacity={opacity * 0.55} />
+          </mesh>
+          <mesh position={[0, 0, 0.14]} scale={[0.24, 0.2, 0.08]}>
+            <boxGeometry args={[1, 1, 1]} />
+            <meshBasicMaterial color="#dff8ff" transparent opacity={opacity * 0.4} />
+          </mesh>
+        </group>
+      ))}
+      {[-1.3, 1.3].map((x) => (
+        <mesh key={`engineering-frame-${x}`} position={[x, 0, -0.52]} scale={[0.14, 2.25, 0.14]}>
+          <boxGeometry args={[1, 1, 1]} />
+          <meshBasicMaterial color={color} transparent opacity={opacity * 0.38} />
+        </mesh>
+      ))}
+      {[-0.7, 0.7].map((x) => (
+        <mesh key={`engineering-arm-${x}`} position={[x, -0.35, -0.35]} rotation={[0.35, 0, 0]} scale={[0.18, 1.6, 0.18]}>
+          <boxGeometry args={[1, 1, 1]} />
+          <meshBasicMaterial color={color} transparent opacity={opacity * 0.42} />
+        </mesh>
+      ))}
+      <Line
+        points={[
+          [-1.38, 1.05, -0.48],
+          [1.38, 1.05, -0.48],
+          [1.38, -1.05, -0.48],
+          [-1.38, -1.05, -0.48],
+          [-1.38, 1.05, -0.48],
+        ]}
+        color={color}
+        transparent
+        opacity={opacity * 0.42}
+        lineWidth={1}
+      />
+      <OrbitingArc
+        position={[0, 0, -0.05]}
+        color={color}
+        radius={1.1}
+        speed={0.05}
+        tilt={[Math.PI / 2, 0.12, Math.PI / 4]}
+        opacity={0.1}
+        arc={Math.PI}
+      />
+    </group>
+  );
+}
+
+function AchievementField({
+  activeZoneId,
+  hoveredZoneId,
+  selectedZoneId,
+}: {
+  activeZoneId: RocketZoneId;
+  hoveredZoneId: RocketZoneId | null;
+  selectedZoneId: RocketZoneId | null;
+}) {
+  const color = getZoneColor("coreAchievements");
+  const emphasized = isZoneEmphasized("coreAchievements", activeZoneId, hoveredZoneId, selectedZoneId);
+  const ringsRef = useRef<Group>(null);
+  const opacity = emphasized ? 0.88 : activeZoneId === "coreAchievements" ? 0.66 : 0.34;
+
+  useFrame(({ clock }) => {
+    if (!ringsRef.current) {
+      return;
+    }
+
+    const t = clock.getElapsedTime();
+    ringsRef.current.rotation.z = Math.sin(t * 0.22) * 0.08;
+    ringsRef.current.scale.setScalar(1 + Math.sin(t * 0.5) * 0.02);
+  });
+
+  return (
+    <group ref={ringsRef} position={zoneAnchors.coreAchievements}>
+      {[0.7, 1.02, 1.34, 1.68].map((radius, index) => (
+        <mesh
+          key={`achievement-ring-${radius}`}
+          rotation={[Math.PI / 2, index * 0.18, index * 0.26]}
+          scale={[1, 0.72 + index * 0.1, 1]}
+        >
+          <torusGeometry args={[radius, 0.028 + index * 0.004, 18, 72]} />
+          <meshBasicMaterial color={index % 2 === 0 ? color : "#dff8ff"} transparent opacity={opacity * (0.78 - index * 0.12)} />
+        </mesh>
+      ))}
+      {[-1.1, -0.35, 0.35, 1.1].map((x, index) => (
+        <mesh key={`achievement-band-${x}`} position={[x, 0, -0.28]} scale={[0.15, 1.25 + index * 0.12, 0.15]}>
+          <boxGeometry args={[1, 1, 1]} />
+          <meshBasicMaterial color={index % 2 === 0 ? color : "#dff8ff"} transparent opacity={opacity * 0.28} />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
+function DriveField({
+  activeZoneId,
+  hoveredZoneId,
+  selectedZoneId,
+}: {
+  activeZoneId: RocketZoneId;
+  hoveredZoneId: RocketZoneId | null;
+  selectedZoneId: RocketZoneId | null;
+}) {
+  const color = getZoneColor("thrustersDrive");
+  const emphasized = isZoneEmphasized("thrustersDrive", activeZoneId, hoveredZoneId, selectedZoneId);
+  const trailRefs = useRef<(Mesh | null)[]>([]);
+  const opacity = emphasized ? 0.95 : activeZoneId === "thrustersDrive" ? 0.74 : 0.38;
+
+  useFrame(({ clock }) => {
+    const t = clock.getElapsedTime();
+    trailRefs.current.forEach((mesh, index) => {
+      if (!mesh) {
+        return;
+      }
+
+      mesh.position.y = -4.1 - ((t * (emphasized ? 2.8 : 1.8) + index * 0.24) % 1.6);
+      mesh.scale.set(0.08 + index * 0.02, emphasized ? 0.55 : 0.38, 0.08);
+    });
+  });
+
+  return (
+    <group position={zoneAnchors.thrustersDrive}>
+      {[-0.48, 0, 0.48].map((x, index) => (
+        <mesh key={`drive-stream-${x}`} position={[x, -0.35, -0.3]} rotation={[Math.PI, 0, 0]}>
+          <coneGeometry args={[0.15 + index * 0.02, 1.8, 16]} />
+          <meshBasicMaterial color={color} transparent opacity={opacity * (0.5 + index * 0.12)} />
+        </mesh>
+      ))}
+      {[-0.52, -0.18, 0.18, 0.52].map((x, index) => (
+        <mesh
+          key={`drive-particle-${x}`}
+          ref={(element) => {
+            trailRefs.current[index] = element;
+          }}
+          position={[x, -4.2, -0.45]}
+        >
+          <sphereGeometry args={[1, 10, 10]} />
+          <meshBasicMaterial color="#dff8ff" transparent opacity={opacity * 0.75} />
+        </mesh>
+      ))}
+      <mesh position={[0, -1.15, -0.55]} scale={[1.3, 2.8, 0.9]}>
+        <sphereGeometry args={[0.45, 16, 16]} />
+        <meshBasicMaterial color={color} transparent opacity={opacity * 0.12} />
+      </mesh>
     </group>
   );
 }
@@ -275,174 +499,34 @@ export function RocketModel({
   selectedZoneId,
   ...groupProps
 }: RocketModelProps) {
-  const coreRef = useRef<Mesh>(null);
-  const achievementGroupRef = useRef<Group>(null);
-  const driveGroupRef = useRef<Group>(null);
-  const codingGroupRef = useRef<Group>(null);
-  const engineeringGroupRef = useRef<Group>(null);
-  const codingNodes = useMemo(() => buildCodingNodes(), []);
-  const engineeringNodes = useMemo(() => buildEngineeringNodes(), []);
-  const driveNodes = useMemo(() => buildDriveNodes(), []);
-  const achievementNodes = useMemo(() => buildAchievementNodes(), []);
-
-  useFrame(({ clock }) => {
-    const t = clock.getElapsedTime();
-
-    if (coreRef.current) {
-      const scale = 1 + Math.sin(t * 1.5) * 0.05;
-      coreRef.current.scale.setScalar(scale);
-    }
-
-    if (achievementGroupRef.current) {
-      achievementGroupRef.current.rotation.z = Math.sin(t * 0.3) * 0.08;
-    }
-
-    if (codingGroupRef.current) {
-      codingGroupRef.current.rotation.z = Math.sin(t * 0.24) * 0.06;
-      codingGroupRef.current.position.x = Math.sin(t * 0.4) * 0.06;
-    }
-
-    if (engineeringGroupRef.current) {
-      engineeringGroupRef.current.position.y = -0.02 + Math.sin(t * 0.6) * 0.04;
-    }
-
-    if (driveGroupRef.current) {
-      driveGroupRef.current.position.z = -0.1 + Math.sin(t * 3.4) * 0.08;
-    }
-  });
-
-  const coreColor = getZoneColor("noseVision");
-  const codingColor = getZoneColor("upperBodyCoding");
-  const achievementsColor = getZoneColor("coreAchievements");
-  const engineeringColor = getZoneColor("lowerBodyEngineering");
-  const driveColor = getZoneColor("thrustersDrive");
-
   return (
     <group {...groupProps}>
       <group position={[0, 0.25, -0.15]}>
-        <mesh ref={coreRef} position={zoneAnchors.noseVision}>
-          <sphereGeometry args={[0.55, 40, 40]} />
-          <meshBasicMaterial color={coreColor} transparent opacity={activeZoneId === "noseVision" ? 0.92 : 0.75} />
-        </mesh>
-        <mesh position={zoneAnchors.noseVision} scale={[1.8, 1.8, 1.8]}>
-          <sphereGeometry args={[0.55, 28, 28]} />
-          <meshBasicMaterial color="#dff8ff" transparent opacity={0.08} />
-        </mesh>
-        <mesh position={zoneAnchors.noseVision} scale={[3.2, 3.2, 3.2]}>
-          <sphereGeometry args={[0.55, 20, 20]} />
-          <meshBasicMaterial color={coreColor} transparent opacity={activeZoneId === "noseVision" ? 0.06 : 0.03} />
-        </mesh>
-        <OrbitingArc
-          position={zoneAnchors.noseVision}
-          color={coreColor}
-          radius={1.12}
-          speed={0.16}
-          tilt={[Math.PI / 2, 0.2, 0]}
-          opacity={0.26}
+        <VisionCore
+          activeZoneId={activeZoneId}
+          hoveredZoneId={hoveredZoneId}
+          selectedZoneId={selectedZoneId}
         />
-        <OrbitingArc
-          position={zoneAnchors.noseVision}
-          color="#dff8ff"
-          radius={1.46}
-          speed={-0.11}
-          tilt={[0.4, 0.4, Math.PI / 2]}
-          opacity={0.16}
+        <CodingField
+          activeZoneId={activeZoneId}
+          hoveredZoneId={hoveredZoneId}
+          selectedZoneId={selectedZoneId}
         />
-
-        <group ref={codingGroupRef}>
-          <ZoneNetwork
-            zoneId="upperBodyCoding"
-            nodes={codingNodes}
-            activeZoneId={activeZoneId}
-            hoveredZoneId={hoveredZoneId}
-            selectedZoneId={selectedZoneId}
-          />
-          <OrbitingArc
-            position={zoneAnchors.upperBodyCoding}
-            color={codingColor}
-            radius={1.38}
-            speed={0.22}
-            tilt={[Math.PI / 2, 0, 0.4]}
-            opacity={0.18}
-          />
-        </group>
-
-        <group ref={achievementGroupRef}>
-          <ZoneNetwork
-            zoneId="coreAchievements"
-            nodes={achievementNodes}
-            activeZoneId={activeZoneId}
-            hoveredZoneId={hoveredZoneId}
-            selectedZoneId={selectedZoneId}
-          />
-          {[0.74, 1.12, 1.48].map((radius, index) => (
-            <mesh
-              key={`achievement-ring-${radius}`}
-              position={zoneAnchors.coreAchievements}
-              rotation={[Math.PI / 2, 0, index * 0.3]}
-              scale={[1, 0.72 + index * 0.12, 1]}
-            >
-              <torusGeometry args={[radius, 0.03, 18, 72]} />
-              <meshBasicMaterial
-                color={achievementsColor}
-                transparent
-                opacity={activeZoneId === "coreAchievements" ? 0.55 : 0.22}
-              />
-            </mesh>
-          ))}
-          <OrbitingArc
-            position={zoneAnchors.coreAchievements}
-            color="#dff8ff"
-            radius={1.72}
-            speed={-0.08}
-            tilt={[Math.PI / 2, 0.6, 0]}
-            opacity={0.12}
-          />
-        </group>
-
-        <group ref={engineeringGroupRef}>
-          <ZoneNetwork
-            zoneId="lowerBodyEngineering"
-            nodes={engineeringNodes}
-            activeZoneId={activeZoneId}
-            hoveredZoneId={hoveredZoneId}
-            selectedZoneId={selectedZoneId}
-          />
-          {engineeringNodes.map((node, index) => (
-            <mesh key={`engineering-brace-${index}`} position={node.position} scale={[0.12, 0.6, 0.12]}>
-              <boxGeometry args={[1, 1, 1]} />
-              <meshBasicMaterial color={engineeringColor} transparent opacity={0.16} />
-            </mesh>
-          ))}
-          <OrbitingArc
-            position={zoneAnchors.lowerBodyEngineering}
-            color={engineeringColor}
-            radius={1.18}
-            speed={0.09}
-            tilt={[Math.PI / 2, 0.2, Math.PI / 4]}
-            opacity={0.12}
-          />
-        </group>
-
-        <group ref={driveGroupRef}>
-          <ZoneNetwork
-            zoneId="thrustersDrive"
-            nodes={driveNodes}
-            activeZoneId={activeZoneId}
-            hoveredZoneId={hoveredZoneId}
-            selectedZoneId={selectedZoneId}
-          />
-          {[-0.45, 0, 0.45].map((x, index) => (
-            <mesh key={`drive-stream-${index}`} position={[x, -4.05, -0.34]} rotation={[Math.PI, 0, 0]}>
-              <coneGeometry args={[0.16 + index * 0.02, 1.9, 16]} />
-              <meshBasicMaterial color={driveColor} transparent opacity={0.28 + index * 0.08} />
-            </mesh>
-          ))}
-          <mesh position={[0, -4.7, -0.58]} scale={[1.4, 3.2, 1.1]}>
-            <sphereGeometry args={[0.4, 18, 18]} />
-            <meshBasicMaterial color={driveColor} transparent opacity={0.08} />
-          </mesh>
-        </group>
+        <AchievementField
+          activeZoneId={activeZoneId}
+          hoveredZoneId={hoveredZoneId}
+          selectedZoneId={selectedZoneId}
+        />
+        <EngineeringField
+          activeZoneId={activeZoneId}
+          hoveredZoneId={hoveredZoneId}
+          selectedZoneId={selectedZoneId}
+        />
+        <DriveField
+          activeZoneId={activeZoneId}
+          hoveredZoneId={hoveredZoneId}
+          selectedZoneId={selectedZoneId}
+        />
 
         {[
           ["noseVision", "upperBodyCoding"],
@@ -455,7 +539,7 @@ export function RocketModel({
             points={[zoneAnchors[startId as RocketZoneId], zoneAnchors[endId as RocketZoneId]]}
             color="#8bd7ff"
             transparent
-            opacity={0.18}
+            opacity={0.12}
             lineWidth={1}
           />
         ))}
