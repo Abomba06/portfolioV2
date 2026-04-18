@@ -26,6 +26,10 @@ export function SubsystemFocus({ selectedZoneId }: SubsystemFocusProps) {
   return (
     <Float speed={1.3} rotationIntensity={0.14} floatIntensity={0.3}>
       <group position={position}>
+        <mesh scale={[2.8, 2.1, 1.4]}>
+          <sphereGeometry args={[0.32, 18, 18]} />
+          <meshBasicMaterial color={zone.lightColor} transparent opacity={0.04} />
+        </mesh>
         <mesh rotation={[Math.PI / 2, 0, 0]}>
           <torusGeometry args={[1.15, 0.03, 20, 96]} />
           <meshBasicMaterial color={zone.lightColor} transparent opacity={0.95} />

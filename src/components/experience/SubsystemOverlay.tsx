@@ -23,6 +23,10 @@ export function SubsystemOverlay({ zoneId }: SubsystemOverlayProps) {
   return (
     <aside className={styles.panel} style={{ ["--zone-color" as string]: zone.lightColor }}>
       <div className={styles.scanlines} />
+      <div className={styles.connector}>
+        <span className={styles.connectorLine} />
+        <span className={styles.connectorDot} />
+      </div>
       <div className={styles.header}>
         <span className={styles.eyebrow}>{content.eyebrow}</span>
         <h2 className={styles.title}>{content.title}</h2>

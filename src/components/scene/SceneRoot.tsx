@@ -8,6 +8,7 @@ import { SubsystemFocus } from "./detail/SubsystemFocus";
 import { RocketModel } from "./rocket/RocketModel";
 import { ZoneBeacons } from "./rocket/ZoneBeacons";
 import { RocketZones } from "./rocket/RocketZones";
+import { DepthField } from "./world/DepthField";
 import { SceneLighting } from "./world/SceneLighting";
 
 type SceneRootProps = {
@@ -50,6 +51,7 @@ export function SceneRoot({
         scale={[12, 18, 12]}
         color="#89d8ff"
       />
+      <DepthField isLowPerformance={isLowPerformance} />
       <Float
         speed={isLowPerformance ? 0.7 : 1}
         rotationIntensity={isLowPerformance ? 0.08 : 0.15}

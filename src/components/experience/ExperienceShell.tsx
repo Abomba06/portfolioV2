@@ -107,7 +107,7 @@ export function ExperienceShell() {
               </h1>
               <p className={styles.copy}>{previewZone.description}</p>
               <div className={styles.status}>
-                <span>Polish Pass</span>
+                <span>Live Field</span>
                 <span>{previewZone.label}</span>
                 {isLowPerformance ? <span>Optimized Mode</span> : null}
               </div>

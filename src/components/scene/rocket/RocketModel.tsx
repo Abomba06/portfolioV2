@@ -3,7 +3,7 @@
 import { Line } from "@react-three/drei";
 import { ThreeElements, useFrame } from "@react-three/fiber";
 import { useMemo, useRef } from "react";
-import { Group, Mesh, Vector3 } from "three";
+import { Group, Mesh } from "three";
 import { ROCKET_ZONES, RocketZoneId } from "@/lib/rocketZones";
 
 type RocketModelProps = ThreeElements["group"] & {
@@ -17,6 +17,8 @@ type NodePoint = {
   position: [number, number, number];
   scale: number;
 };
+
+type ConnectionPair = readonly [[number, number, number], [number, number, number]];
 
 const zoneAnchors: Record<RocketZoneId, [number, number, number]> = {
   noseVision: [0, 4.25, 0],
@@ -95,6 +97,51 @@ function connectionPairs(points: NodePoint[], step = 1) {
   return points.map((point, index) => [point.position, points[(index + step) % points.length].position] as const);
 }
 
+function interpolatePoint(pair: ConnectionPair, t: number): [number, number, number] {
+  const [start, end] = pair;
+
+  return [
+    start[0] + (end[0] - start[0]) * t,
+    start[1] + (end[1] - start[1]) * t,
+    start[2] + (end[2] - start[2]) * t,
+  ];
+}
+
+function OrbitingArc({
+  position,
+  color,
+  radius,
+  speed,
+  tilt,
+  opacity,
+}: {
+  position: [number, number, number];
+  color: string;
+  radius: number;
+  speed: number;
+  tilt: [number, number, number];
+  opacity: number;
+}) {
+  const ref = useRef<Group>(null);
+
+  useFrame(({ clock }) => {
+    if (!ref.current) {
+      return;
+    }
+
+    ref.current.rotation.z = clock.getElapsedTime() * speed;
+  });
+
+  return (
+    <group ref={ref} position={position} rotation={tilt}>
+      <mesh>
+        <torusGeometry args={[radius, 0.02, 18, 72, Math.PI * 1.35]} />
+        <meshBasicMaterial color={color} transparent opacity={opacity} />
+      </mesh>
+    </group>
+  );
+}
+
 function EnergyNode({
   position,
   scale,
@@ -111,6 +158,60 @@ function EnergyNode({
       <sphereGeometry args={[1, 16, 16]} />
       <meshBasicMaterial color={color} transparent opacity={opacity} />
     </mesh>
+  );
+}
+
+function EnergyPulses({
+  zoneId,
+  connections,
+  isFocused,
+  isInteractive,
+}: {
+  zoneId: RocketZoneId;
+  connections: ConnectionPair[];
+  isFocused: boolean;
+  isInteractive: boolean;
+}) {
+  const color = getZoneColor(zoneId);
+  const pulseCount = Math.min(connections.length, isInteractive ? 6 : 3);
+  const offsets = useMemo(
+    () => Array.from({ length: pulseCount }, (_, index) => ((index * 0.31) % 1)),
+    [pulseCount],
+  );
+  const meshesRef = useRef<(Mesh | null)[]>([]);
+
+  useFrame(({ clock }) => {
+    const t = clock.getElapsedTime();
+
+    offsets.forEach((offset, index) => {
+      const mesh = meshesRef.current[index];
+      const pair = connections[index % connections.length];
+      if (!mesh || !pair) {
+        return;
+      }
+
+      const travel = (t * (isInteractive ? 0.42 : 0.22) + offset) % 1;
+      const point = interpolatePoint(pair, travel);
+      mesh.position.set(point[0], point[1], point[2]);
+      const scale = isInteractive ? 0.1 : isFocused ? 0.08 : 0.06;
+      mesh.scale.setScalar(scale);
+    });
+  });
+
+  return (
+    <group>
+      {offsets.map((offset, index) => (
+        <mesh
+          key={`${zoneId}-pulse-${offset}`}
+          ref={(element) => {
+            meshesRef.current[index] = element;
+          }}
+        >
+          <sphereGeometry args={[1, 12, 12]} />
+          <meshBasicMaterial color={color} transparent opacity={isInteractive ? 0.9 : 0.65} />
+        </mesh>
+      ))}
+    </group>
   );
 }
 
@@ -131,10 +232,11 @@ function ZoneNetwork({
   const isInteractive = hoveredZoneId === zoneId || selectedZoneId === zoneId;
   const isFocused = activeZoneId === zoneId;
   const opacity = isInteractive ? 0.95 : isFocused ? 0.72 : 0.42;
+  const connections = useMemo(() => connectionPairs(nodes), [nodes]);
 
   return (
     <group>
-      {connectionPairs(nodes).map(([start, end], index) => (
+      {connections.map(([start, end], index) => (
         <Line
           key={`${zoneId}-line-${index}`}
           points={[start, end]}
@@ -144,6 +246,12 @@ function ZoneNetwork({
           lineWidth={isInteractive ? 1.6 : 1}
         />
       ))}
+      <EnergyPulses
+        zoneId={zoneId}
+        connections={connections}
+        isFocused={isFocused}
+        isInteractive={isInteractive}
+      />
       {nodes.map((node, index) => (
         <EnergyNode
           key={`${zoneId}-node-${index}`}
@@ -170,6 +278,8 @@ export function RocketModel({
   const coreRef = useRef<Mesh>(null);
   const achievementGroupRef = useRef<Group>(null);
   const driveGroupRef = useRef<Group>(null);
+  const codingGroupRef = useRef<Group>(null);
+  const engineeringGroupRef = useRef<Group>(null);
   const codingNodes = useMemo(() => buildCodingNodes(), []);
   const engineeringNodes = useMemo(() => buildEngineeringNodes(), []);
   const driveNodes = useMemo(() => buildDriveNodes(), []);
@@ -185,6 +295,15 @@ export function RocketModel({
 
     if (achievementGroupRef.current) {
       achievementGroupRef.current.rotation.z = Math.sin(t * 0.3) * 0.08;
+    }
+
+    if (codingGroupRef.current) {
+      codingGroupRef.current.rotation.z = Math.sin(t * 0.24) * 0.06;
+      codingGroupRef.current.position.x = Math.sin(t * 0.4) * 0.06;
+    }
+
+    if (engineeringGroupRef.current) {
+      engineeringGroupRef.current.position.y = -0.02 + Math.sin(t * 0.6) * 0.04;
     }
 
     if (driveGroupRef.current) {
@@ -209,14 +328,44 @@ export function RocketModel({
           <sphereGeometry args={[0.55, 28, 28]} />
           <meshBasicMaterial color="#dff8ff" transparent opacity={0.08} />
         </mesh>
-
-        <ZoneNetwork
-          zoneId="upperBodyCoding"
-          nodes={codingNodes}
-          activeZoneId={activeZoneId}
-          hoveredZoneId={hoveredZoneId}
-          selectedZoneId={selectedZoneId}
+        <mesh position={zoneAnchors.noseVision} scale={[3.2, 3.2, 3.2]}>
+          <sphereGeometry args={[0.55, 20, 20]} />
+          <meshBasicMaterial color={coreColor} transparent opacity={activeZoneId === "noseVision" ? 0.06 : 0.03} />
+        </mesh>
+        <OrbitingArc
+          position={zoneAnchors.noseVision}
+          color={coreColor}
+          radius={1.12}
+          speed={0.16}
+          tilt={[Math.PI / 2, 0.2, 0]}
+          opacity={0.26}
         />
+        <OrbitingArc
+          position={zoneAnchors.noseVision}
+          color="#dff8ff"
+          radius={1.46}
+          speed={-0.11}
+          tilt={[0.4, 0.4, Math.PI / 2]}
+          opacity={0.16}
+        />
+
+        <group ref={codingGroupRef}>
+          <ZoneNetwork
+            zoneId="upperBodyCoding"
+            nodes={codingNodes}
+            activeZoneId={activeZoneId}
+            hoveredZoneId={hoveredZoneId}
+            selectedZoneId={selectedZoneId}
+          />
+          <OrbitingArc
+            position={zoneAnchors.upperBodyCoding}
+            color={codingColor}
+            radius={1.38}
+            speed={0.22}
+            tilt={[Math.PI / 2, 0, 0.4]}
+            opacity={0.18}
+          />
+        </group>
 
         <group ref={achievementGroupRef}>
           <ZoneNetwork
@@ -241,21 +390,39 @@ export function RocketModel({
               />
             </mesh>
           ))}
+          <OrbitingArc
+            position={zoneAnchors.coreAchievements}
+            color="#dff8ff"
+            radius={1.72}
+            speed={-0.08}
+            tilt={[Math.PI / 2, 0.6, 0]}
+            opacity={0.12}
+          />
         </group>
 
-        <ZoneNetwork
-          zoneId="lowerBodyEngineering"
-          nodes={engineeringNodes}
-          activeZoneId={activeZoneId}
-          hoveredZoneId={hoveredZoneId}
-          selectedZoneId={selectedZoneId}
-        />
-        {engineeringNodes.map((node, index) => (
-          <mesh key={`engineering-brace-${index}`} position={node.position} scale={[0.12, 0.6, 0.12]}>
-            <boxGeometry args={[1, 1, 1]} />
-            <meshBasicMaterial color={engineeringColor} transparent opacity={0.16} />
-          </mesh>
-        ))}
+        <group ref={engineeringGroupRef}>
+          <ZoneNetwork
+            zoneId="lowerBodyEngineering"
+            nodes={engineeringNodes}
+            activeZoneId={activeZoneId}
+            hoveredZoneId={hoveredZoneId}
+            selectedZoneId={selectedZoneId}
+          />
+          {engineeringNodes.map((node, index) => (
+            <mesh key={`engineering-brace-${index}`} position={node.position} scale={[0.12, 0.6, 0.12]}>
+              <boxGeometry args={[1, 1, 1]} />
+              <meshBasicMaterial color={engineeringColor} transparent opacity={0.16} />
+            </mesh>
+          ))}
+          <OrbitingArc
+            position={zoneAnchors.lowerBodyEngineering}
+            color={engineeringColor}
+            radius={1.18}
+            speed={0.09}
+            tilt={[Math.PI / 2, 0.2, Math.PI / 4]}
+            opacity={0.12}
+          />
+        </group>
 
         <group ref={driveGroupRef}>
           <ZoneNetwork
@@ -271,6 +438,10 @@ export function RocketModel({
               <meshBasicMaterial color={driveColor} transparent opacity={0.28 + index * 0.08} />
             </mesh>
           ))}
+          <mesh position={[0, -4.7, -0.58]} scale={[1.4, 3.2, 1.1]}>
+            <sphereGeometry args={[0.4, 18, 18]} />
+            <meshBasicMaterial color={driveColor} transparent opacity={0.08} />
+          </mesh>
         </group>
 
         {[

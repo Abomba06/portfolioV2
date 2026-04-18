@@ -1,6 +1,9 @@
 "use client";
 
 import { Float } from "@react-three/drei";
+import { useFrame } from "@react-three/fiber";
+import { useRef } from "react";
+import { Group } from "three";
 import { RocketZoneId, ROCKET_ZONES } from "@/lib/rocketZones";
 
 type SubsystemChamberProps = {
@@ -17,11 +20,24 @@ const chamberAnchors: Record<RocketZoneId, [number, number, number]> = {
 };
 
 function VisionChamber({ color }: { color: string }) {
+  const ref = useRef<Group>(null);
+
+  useFrame(({ clock }) => {
+    if (!ref.current) {
+      return;
+    }
+    ref.current.rotation.z = clock.getElapsedTime() * 0.08;
+  });
+
   return (
-    <group>
+    <group ref={ref}>
       <mesh rotation={[0, 0, Math.PI / 2]} scale={[1.2, 1.7, 1]}>
         <torusGeometry args={[1.42, 0.05, 24, 96]} />
         <meshBasicMaterial color={color} transparent opacity={0.35} />
+      </mesh>
+      <mesh rotation={[Math.PI / 2, 0.3, 0]} scale={[1.6, 1.2, 1]}>
+        <torusGeometry args={[0.98, 0.025, 18, 72]} />
+        <meshBasicMaterial color="#dff6ff" transparent opacity={0.22} />
       </mesh>
       <mesh position={[0, 0, -0.42]} scale={[1.4, 1.8, 0.2]}>
         <cylinderGeometry args={[0.92, 0.92, 0.36, 32, 1, true]} />
@@ -38,6 +54,12 @@ function CodingChamber({ color }: { color: string }) {
         <mesh key={x} position={[x, 0, -0.35]} scale={[0.32, 0.9, 0.04]}>
           <boxGeometry args={[1, 1, 1]} />
           <meshBasicMaterial color={color} transparent opacity={0.2} />
+        </mesh>
+      ))}
+      {[-1.1, -0.4, 0.4, 1.1].map((x) => (
+        <mesh key={`trace-${x}`} position={[x, -0.65, -0.28]} scale={[0.18, 0.55, 0.02]}>
+          <boxGeometry args={[1, 1, 1]} />
+          <meshBasicMaterial color="#dff8ff" transparent opacity={0.12} />
         </mesh>
       ))}
       <mesh position={[0, 0, -0.55]} rotation={[0, 0, Math.PI / 2]}>
@@ -57,6 +79,12 @@ function CoreChamber({ color }: { color: string }) {
           <meshBasicMaterial color={color} transparent opacity={0.24} />
         </mesh>
       ))}
+      {[-0.95, -0.35, 0.35, 0.95].map((x) => (
+        <mesh key={`stack-${x}`} position={[x, 0, -0.4]} scale={[0.15, 1.25, 0.15]}>
+          <boxGeometry args={[1, 1, 1]} />
+          <meshBasicMaterial color="#dff7ff" transparent opacity={0.12} />
+        </mesh>
+      ))}
       <mesh position={[0, 0, -0.48]} rotation={[Math.PI / 2, 0, 0]}>
         <torusGeometry args={[1.08, 0.03, 18, 84]} />
         <meshBasicMaterial color="#e3f7ff" transparent opacity={0.22} />
@@ -74,6 +102,12 @@ function EngineeringChamber({ color }: { color: string }) {
           <meshBasicMaterial color={color} transparent opacity={0.22} />
         </mesh>
       ))}
+      {[-1.05, 0, 1.05].map((x) => (
+        <mesh key={`frame-${x}`} position={[x, -0.1, -0.42]} scale={[0.16, 1.35, 0.16]}>
+          <boxGeometry args={[1, 1, 1]} />
+          <meshBasicMaterial color={color} transparent opacity={0.16} />
+        </mesh>
+      ))}
       <mesh position={[0, -0.2, -0.52]} rotation={[Math.PI / 2, 0, 0]}>
         <torusGeometry args={[1.18, 0.04, 20, 84]} />
         <meshBasicMaterial color="#dff6ff" transparent opacity={0.18} />
@@ -83,8 +117,17 @@ function EngineeringChamber({ color }: { color: string }) {
 }
 
 function DriveChamber({ color }: { color: string }) {
+  const ref = useRef<Group>(null);
+
+  useFrame(({ clock }) => {
+    if (!ref.current) {
+      return;
+    }
+    ref.current.position.y = Math.sin(clock.getElapsedTime() * 2.4) * 0.08;
+  });
+
   return (
-    <group>
+    <group ref={ref}>
       {[0, (Math.PI * 2) / 3, (Math.PI * 4) / 3].map((rotation) => (
         <mesh
           key={rotation}
@@ -93,6 +136,12 @@ function DriveChamber({ color }: { color: string }) {
         >
           <coneGeometry args={[0.18, 0.82, 18]} />
           <meshBasicMaterial color={color} transparent opacity={0.3} />
+        </mesh>
+      ))}
+      {[-0.55, 0.55].map((x, index) => (
+        <mesh key={`trail-${x}`} position={[x, -0.42, -0.46]} rotation={[Math.PI, 0, 0]}>
+          <coneGeometry args={[0.12 + index * 0.04, 1.2, 14]} />
+          <meshBasicMaterial color={color} transparent opacity={0.22 + index * 0.08} />
         </mesh>
       ))}
       <mesh position={[0, 0, -0.55]}>

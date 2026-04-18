@@ -1,11 +1,11 @@
 .panel {
   position: absolute;
-  top: 1.5rem;
-  right: 1.5rem;
-  width: min(34rem, calc(100vw - 3rem));
-  max-height: calc(100vh - 3rem);
+  top: 50%;
+  right: 2rem;
+  width: min(28rem, calc(100vw - 4rem));
+  max-height: calc(100vh - 6rem);
   overflow: auto;
-  padding: 1.25rem;
+  padding: 1rem;
   border: 1px solid color-mix(in srgb, var(--zone-color) 30%, rgba(255, 255, 255, 0.12));
   border-radius: 1.4rem;
   background:
@@ -15,6 +15,7 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.06);
   backdrop-filter: blur(18px);
   pointer-events: auto;
+  transform: translateY(-50%);
 }
 
 .scanlines {
@@ -36,6 +37,32 @@
 .header {
   position: relative;
   margin-bottom: 1rem;
+}
+
+.connector {
+  position: absolute;
+  top: 2rem;
+  left: -4.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  pointer-events: none;
+}
+
+.connectorLine {
+  display: block;
+  width: 3.4rem;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--zone-color));
+  opacity: 0.75;
+}
+
+.connectorDot {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 999px;
+  background: var(--zone-color);
+  box-shadow: 0 0 16px var(--zone-color);
 }
 
 .eyebrow {
@@ -152,9 +179,14 @@
     width: auto;
     max-height: min(55vh, 34rem);
     padding: 1rem;
+    transform: none;
   }
 
   .metrics {
     grid-template-columns: 1fr;
+  }
+
+  .connector {
+    display: none;
   }
 }
